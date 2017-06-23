@@ -1,0 +1,69 @@
+
+project.ext {
+
+  cfgVersion = '0.1.0'
+
+  cfgGroup = 'org.openmuc'
+
+  cfgCopyDependencies = true
+
+  cfgCopyArtefacts = true
+
+  cfgCopyToRoot = true
+
+  javaProjects = subprojects
+
+  distributionProjects = subprojects.findAll {
+    it.getPath() == ":pcharge" ||
+    it.getPath() == ":openmuc-driver-pcharge" ||
+    it.getPath() == ":openmuc-app-pcharge"
+  }
+
+  docProjects = distributionProjects.findAll {
+    it.getPath() == ":pcharge"
+  }
+
+}
+
+configure(javaProjects) {
+  apply plugin: "java"
+  apply plugin: "maven"
+}
+
+tasks.withType(Tar) {
+  
+  into(project.name) {
+
+    from("./") {
+      include "build.gradle"
+      include "configuration.gradle"
+      include "license/**"
+      include "gradle/wrapper/**"
+      include "gradlew"
+      include "gradlew.bat"
+      include "build/libs/**"
+      include "dependencies/**"
+      include "src/**"
+
+      exclude "**/projects/**/bin"
+      exclude "**/projects/**/build"
+      exclude "**/projects/**/.settings"
+      exclude "**/projects/**/.project"
+      exclude "**/projects/**/.classpath"
+      exclude "**/projects/**/.gradle"
+
+      for (Project myproject: distributionProjects) {
+        include myproject.getProjectDir().toString().substring((int)(getProjectDir().toString().size() + 1)) + "/**";
+      }
+
+    }
+
+    if (name.equals("tar") ){
+      exclude "**/dependencies/**/src"
+    }
+
+    from("./build/") {
+      include "settings.gradle"
+    }
+  }
+}

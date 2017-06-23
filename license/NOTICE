@@ -1,0 +1,33 @@
+/*
+ * Copyright 2016-17 ISC Konstanz
+ *
+ * This file is part of OpenPCharge.
+ * For more information visit https://github.com/isc-konstanz/OpenPCharge.
+ *
+ * OpenPCharge is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenPCharge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+Dependencies
+------------
+
+Information about the licenses of open source software packaged with 
+OpenPCharge can be found in the following folders of the
+distribution:
+
+/dependencies
+/projects/{project}/dependencies
+
+You may request the source code of the dependencies by sending a mail
+through the contact at https://github.com/isc-konstanz/OpenPCharge.

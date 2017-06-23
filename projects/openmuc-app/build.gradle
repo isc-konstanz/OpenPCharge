@@ -1,0 +1,34 @@
+configurations.create('embed')
+
+def osgiversion = '4.3.1'
+def openmucversion = '0.17.2'
+
+repositories {
+   flatDir {
+       dirs 'dependencies/openmuc'
+   }
+}
+
+dependencies {
+  compile group: 'org.osgi', name: 'org.osgi.core', version: osgiversion
+  compile group: 'org.osgi', name: 'org.osgi.compendium', version: osgiversion
+  compile group: 'org.openmuc.framework', name: 'openmuc-core-api', version: openmucversion
+  
+  compile project(':pcharge')
+  embed project(':pcharge')
+}
+
+jar {
+  manifest {
+    name = "OpenMUC App - P-CHARGE"
+    instruction 'Bundle-ClassPath', '.,lib/pcharge-' + cfgVersion + '.jar'
+    instruction 'Import-Package', '!org.openmuc.pcharge.*,*'
+    instruction 'Export-Package', ''
+  }
+}
+
+jar {
+  into('lib') {
+    from configurations.embed
+  }
+}

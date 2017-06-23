@@ -1,0 +1,10 @@
+dependencies {
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.19'
+}
+
+jar {
+  manifest {
+    name = "P-CHARGE"
+    instruction 'Export-Package', '!*.internal.*,*'
+  }
+}

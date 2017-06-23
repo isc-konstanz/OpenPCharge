@@ -1,0 +1,6 @@
+include "pcharge", "openmuc-driver-pcharge", "openmuc-app-pcharge"
+
+project(":pcharge").projectDir = file("projects/pcharge")
+
+project(":openmuc-driver-pcharge").projectDir = file("projects/openmuc-driver")
+project(":openmuc-app-pcharge").projectDir = file("projects/openmuc-app")
