@@ -50,8 +50,6 @@ public class PChargeDriver implements DriverService {
 	private final static ChannelOptions CHANNEL_OPTIONS = new PChargeChannelOptions();
 	private final static DriverInfo DRIVER_INFO = new DriverInfo(ID, NAME, DESCRIPTION, DEVICE_OPTIONS, CHANNEL_OPTIONS);
 
-//	private volatile boolean isDeviceScanInterrupted = false;
-
 	@Override
 	public DriverInfo getInfo() {
 		return DRIVER_INFO;
@@ -61,33 +59,11 @@ public class PChargeDriver implements DriverService {
 	public void scanForDevices(String settingsStr, DriverDeviceScanListener listener)
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ScanInterruptedException {
 
-		logger.info("Scan for P-CHARGE ports");
-//		Parameters settings = DEVICE_OPTIONS.parseScanSettings(settingsStr);
-
-		// TODO: Get tcp port from settings and maybe ping, if the host exists?
-		
-//		double counter = 0;
-//		for (RpiConnetorInfo info : infos) {
-//			if (isDeviceScanInterrupted) {
-//				break;
-//			}
-//			
-//			String address = "";
-//			String settings = GpioDeviceOptions.TYPE_KEY + "=" + info.getType().getName();
-//			
-//			listener.deviceFound(new DeviceScanInfo("rpi_device_"+info.getId(), 
-//					address, settings, info.getDescription()));
-//			
-//			listener.scanProgressUpdate((int) (counter / infos.size() * 100.0));
-//			
-//			counter++;
-//		}
-		
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void interruptDeviceScan() throws UnsupportedOperationException {
-//		isDeviceScanInterrupted = true;
 	}
 
 	@Override

@@ -36,6 +36,8 @@ public class PChargeSocket {
 	private static final Logger logger = LoggerFactory.getLogger(PChargeSocket.class);
 
 	private static final int INPUT_BUFFER_LENGTH = 1024;
+	private static final int SLEEP_INTERVAL = 50;
+	private static final int TIMEOUT = 250;
 
 	private ServerSocket serverSocket;
    	private Socket clientSocket;
@@ -74,32 +76,50 @@ public class PChargeSocket {
 
 	public synchronized PChargeMessage read() throws IOException, PChargeException  {
 		
+		PChargeMessage msg = null;
+		
+		long start = System.currentTimeMillis();
 		synchronized(is) {
 			byte[] buffer = new byte[INPUT_BUFFER_LENGTH];
-			int numBytesRead = is.read(buffer);
-			if (numBytesRead > 0) {
-				PChargeMessage msg = PChargeMessage.parse(Arrays.copyOfRange(buffer, 0, numBytesRead));
+			while (System.currentTimeMillis() - start < TIMEOUT) {
+				if (is.available() > 0) {
+					int numBytesRead = is.read(buffer);
+					if (numBytesRead > 0) {
+						msg = PChargeMessage.parse(Arrays.copyOfRange(buffer, 0, numBytesRead));
 
-		        if (logger.isTraceEnabled()) {
-		            StringBuilder hex = new StringBuilder();
-			        StringBuilder ascii = new StringBuilder();
-		            
-			        ascii.append("<STX><ENDIAN>");
-			        byte[] byteMsg = msg.getMessage();
-			        for (int i=0; i<byteMsg.length; i++) {
-		    			String h = Integer.toHexString(byteMsg[i] & 0xff);
-		    			if (h.length() < 2) {
-		    	    		hex.append("0");
-		            	}
-			    		hex.append(h);
-			        }
-			        ascii.append("<BCC>");
+				        if (msg != null && logger.isTraceEnabled()) {
+				            StringBuilder hex = new StringBuilder();
+					        StringBuilder ascii = new StringBuilder();
 
-		            logger.trace("Server <--	{} (HEX: {})", ascii.toString(), hex.toString());
+					        ascii.append("<STX><ENDIAN>");
+					        ascii.append(msg.getMsgId().getSymbol());
+					        
+					        byte[] byteMsg = msg.getMessage(false);
+					        for (int i=0; i<byteMsg.length; i++) {
+				    			String h = Integer.toHexString(byteMsg[i] & 0xff);
+				    			if (h.length() < 2) {
+				    	    		hex.append("0");
+				            	}
+					    		hex.append(h);
+						        ascii.append((char) Integer.parseInt(h, 16));
+					        }
+					        ascii.append("<BCC>");
+
+				            logger.trace("Server <--	{} (HEX: {})", ascii.toString(), hex.toString());
+						}
+				        break;
+					}
+				}
+				try {
+					Thread.sleep(SLEEP_INTERVAL);
+				} catch (InterruptedException e) {
 				}
 			}
-			return null;
+			if (msg == null) {
+				logger.debug("Read timed out after {}s", TIMEOUT/1000);
+			}
 		}
+		return msg;
 	}
 
 	public synchronized void write(CmdId cmdId, Integer[] message) throws IOException {
@@ -177,4 +197,5 @@ public class PChargeSocket {
         
         return cmd;
     }
+
 }

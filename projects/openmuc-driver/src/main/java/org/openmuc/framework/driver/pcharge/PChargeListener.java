@@ -31,9 +31,9 @@ import org.openmuc.framework.data.Value;
 import org.openmuc.framework.driver.pcharge.options.helper.ChannelAddress;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.RecordsReceivedListener;
+import org.openmuc.pcharge.PChargeException;
 import org.openmuc.pcharge.PChargeMessage;
 import org.openmuc.pcharge.PChargeSocket;
-import org.openmuc.pcharge.PChargeException;
 import org.openmuc.pcharge.data.ChargePortEvent;
 import org.openmuc.pcharge.data.MsgId;
 import org.slf4j.Logger;
@@ -96,47 +96,71 @@ public class PChargeListener implements Runnable {
 		while (running) {
 			if (pauseFlag) {
 				listening = false;
+				pauseFlag = false;
 			}
 			else if (listening) {
-				synchronized(connection) {
-					try {
-						PChargeMessage message = connection.read();
-						
-						if (message != null && message.getMsgId() == MsgId.INFO) {
-							switch(message.getCmdId()) {
-								case INFO:
-									ChargePortEvent event = new ChargePortEvent(message.getMessage()[0]);
-
-									long samplingTime = System.currentTimeMillis();
-
-									for (ChannelRecordContainer container : containers) {
-										try {
-											ChannelAddress address = new ChannelAddress(container.getChannelAddress());
-
-											//TODO check if port or rfid event through address parameters
-											int port = address.getChargePort();
-											
-											Value value = new BooleanValue(event.hasPortEvent(port));
-											container.setRecord(new Record(value, samplingTime, Flag.VALID));
-											
-											logger.debug("Received event flag for listened port {}", port);
-											
-										} catch (ArgumentSyntaxException e) {
-											logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
-											container.setRecord(new Record(null, samplingTime, Flag.DRIVER_ERROR_READ_FAILURE));
-										}
-									}
-									listener.newRecords(containers);
-									break;
-								default:
-									logger.warn("Received unknown command id: {}", message.getCmdString());
-									break;
-							}
-						}
-					
-					} catch (IOException | PChargeException e) {
-				        logger.warn("Receiving client data failed: {}", e.getMessage());
+				try {
+					PChargeMessage message = null;
+					synchronized(connection) {
+						message = connection.read();
 					}
+					
+					if (message != null && message.getMsgId() == MsgId.INFO) {
+						switch(message.getCmdId()) {
+							case INFO:
+								ChargePortEvent event = new ChargePortEvent(message.getMessage()[0]);
+
+								long samplingTime = System.currentTimeMillis();
+
+								for (ChannelRecordContainer container : containers) {
+									try {
+										ChannelAddress address = new ChannelAddress(container.getChannelAddress());
+										//TODO check if port or rfid event through address parameters
+										int port = address.getChargePort();
+										
+										Value value = null;
+										switch(address.getKey()) {
+										case EVENT_PORT:
+											boolean portEvent = event.hasPortEvent(port);
+											if (portEvent) {
+												value = new BooleanValue(portEvent);
+											
+												logger.debug("Event at port: {}", port);
+											}	
+											break;
+										case EVENT_RFID:
+											boolean rfidEvent = event.hasRfidEvent();
+											if (rfidEvent) {
+												value = new BooleanValue(rfidEvent);
+												
+												logger.debug("RFID Event recognized");
+											}	
+											break;
+										default:
+											logger.warn("Unable to listen for channel with key: {}", address.getKey());
+											break;
+										}
+										
+										if(value != null) {
+											container.setRecord(new Record(value, samplingTime, Flag.VALID));
+											logger.debug("Received event flag for listened port {}", port);
+										}
+										
+									} catch (ArgumentSyntaxException e) {
+										logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
+										container.setRecord(new Record(null, samplingTime, Flag.DRIVER_ERROR_READ_FAILURE));
+									}
+								}
+								listener.newRecords(containers);
+								break;
+							default:
+								logger.warn("Received unknown command id: {}", message.getCmdString());
+								break;
+						}
+					}
+				
+				} catch (IOException | PChargeException e) {
+			        logger.warn("Receiving client data failed: {}", e.getMessage());
 				}
 			}
 			

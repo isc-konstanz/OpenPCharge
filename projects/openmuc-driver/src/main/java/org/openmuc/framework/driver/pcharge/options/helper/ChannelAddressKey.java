@@ -18,46 +18,45 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.pcharge.data;
+package org.openmuc.framework.driver.pcharge.options.helper;
 
 
-public enum MsgId {
+public enum ChannelAddressKey {
 
-	ANSWER(0x41, 'A'),
-	COMMAND(0x43, 'C'),
-	DEBUG(0x44, 'D'),
-	INFO(0x49, 'I'),
-	UNKNOWN(-1, 'U');
+	STATUS,
+	CURRENT_CABLE,
+	CURRENT_LIMIT,
+	VENTILATION_REQUEST, 
+	STATUS_AUTHORIZATION,
+	OPTIMIZED_CHARGING, 
+	STATUS_COMPLETE,
+	DURATION_CHARGING,
+	ENERGY_CHARGING,
+	DURATION_LAST_CHARGING, 
+	ENERGY_TOTAL,
+	COUNTER_CHARGING_CYCLES, 
+	LOCKED, 
+	CONTACTOR, 
+	RCD, 
+	PWM_MINIMUM, 
+	PWM_MAXIMUM, 
+	VOLTAGE, 
+	BUTTON_1_START, 
+	BUTTON_2_STOP, 
+	BUTTON_3_OPTIMIZED, 
+	BUTTON_4_SPARE, 
+	LED_RED_ERROR, 
+	LED_GREEN_READY, 
+	LED_ORANGE_OPTIMIZED, 
+	LED_SPARE, 
+	RFID_LOGGED_IN, 
+	RFID_GROUP, 
+	RFID_CARD, 
+	RFID_USER, 
+	EVENT_PORT,
+	EVENT_RFID,
+	UNKNOWN;
+	
 
-    private final int code;
-    private final char symbol;
 
-    private MsgId(int code, char symbol) {
-        this.code = code;
-        this.symbol = symbol;
-    }
-
-    public byte getCode() {
-        return (byte) code;
-    }
-
-    public char getSymbol() {
-        return symbol;
-    }
-
-	public static MsgId newMsgId(byte b) {
-		
-		switch(b) {
-		case (byte) 0x41:
-			return ANSWER;
-		case (byte) 0x43:
-			return COMMAND;
-		case (byte) 0x44:
-			return DEBUG;
-		case (byte) 0x49:
-			return INFO;
-		default:
-			return UNKNOWN;
-		}
-	}
 }

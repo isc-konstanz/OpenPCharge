@@ -21,43 +21,46 @@
 package org.openmuc.pcharge.data;
 
 
-public enum MsgId {
+public enum ChargePortStartStop {
 
-	ANSWER(0x41, 'A'),
-	COMMAND(0x43, 'C'),
-	DEBUG(0x44, 'D'),
-	INFO(0x49, 'I'),
-	UNKNOWN(-1, 'U');
+	STOP (1),
+	START_REQUEST (2),
+	START (3),
+	OPTIMIZED_AKTIVATE (4),
+	OPTIMIZED_DEAKTIVATE (5),
+	INTERRUPT_CHARGING (6), 	//Charging can be interrupted with this command. It's still locked but can be unlocked 
+								//by sending this command a second time. Charging can be started again by sending the "START" command. 
+	LOCK_MANUALLY(7);
 
     private final int code;
-    private final char symbol;
 
-    private MsgId(int code, char symbol) {
+    private ChargePortStartStop(int code) {
         this.code = code;
-        this.symbol = symbol;
     }
 
-    public byte getCode() {
-        return (byte) code;
+    public int getCode() {
+        return code;
     }
-
-    public char getSymbol() {
-        return symbol;
-    }
-
-	public static MsgId newMsgId(byte b) {
-		
+	
+    
+	public static ChargePortStartStop newStatus(int b) {
 		switch(b) {
-		case (byte) 0x41:
-			return ANSWER;
-		case (byte) 0x43:
-			return COMMAND;
-		case (byte) 0x44:
-			return DEBUG;
-		case (byte) 0x49:
-			return INFO;
-		default:
-			return UNKNOWN;
+			case 1:
+				return STOP;
+			case 2:
+				return START_REQUEST;
+			case 3:
+				return START;
+			case 4:
+				return OPTIMIZED_AKTIVATE;
+			case 5:
+				return OPTIMIZED_DEAKTIVATE;
+			case 6:
+				return INTERRUPT_CHARGING;
+			case 7:
+				return LOCK_MANUALLY;
+			default:
+				throw new IllegalArgumentException("Invalid charge port status: " + b);
 		}
 	}
 }

@@ -29,6 +29,8 @@ import java.util.Arrays;
  * and additional information about the charging station port.
  */
 public class ChargePortInfo {
+
+	private static final int OFFSET = 54;
 	
 	private final byte[] message;
 	
@@ -39,38 +41,179 @@ public class ChargePortInfo {
 		this.message = message;
 	}
 
-	public boolean isOptimized(int port) {
-		return (message[5] == 1 ? true : false);
-	}
-
 	public ChargePortStatus getStatus(int port) {
-		return ChargePortStatus.newStatus(message[0]);
+		return ChargePortStatus.newStatus(message[0+offset(port)]);
+	}
+	
+	public int getCableCurrent(int port) { //current in Ampere
+		return message[1+offset(port)];
 	}
 
+	public int getCurrentLimit(int port) { //current in Ampere
+		return message[2+offset(port)];
+	}
+	
+	public boolean ventilationIsRequested (int port) { //Flags of the car
+		if (message[3+offset(port)] == 0x01) {
+			return true;
+		}
+		return false;
+	}
+	
+	public ChargeAuthorizationStatus getChargeAuthorizationStatus (int port) {
+		return ChargeAuthorizationStatus.newStatus(message[4+offset(port)]);
+	}
+	
+	public boolean isOptimized(int port) {
+		return (message[5+offset(port)] == 1 ? true : false);
+	}
+	
 	public ChargeCompleteStatus getCompleteStatus(int port) {
-		return ChargeCompleteStatus.getStatus(message[6]);
+		return ChargeCompleteStatus.newStatus(message[6+offset(port)]);
 	}
 
-	public int getCurrent(int port) {
-		return message[1];
+	public int getDurationCharging(int port) { // time in seconds
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 7+offset, 11+offset));
 	}
 
-	public int getCurrentLimit(int port) {
-		return message[2];
+	public int getEnergyCharging(int port) { //energy in Wh
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 11+offset, 15+offset));
+	}
+	
+	public int getLastChargingTime(int port) { // time in seconds
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 15+offset, 19+offset));
+	}
+	
+	public int getLastChargingEnergy(int port) { //energy in Wh
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 19+offset, 23+offset));
 	}
 
-	public int getDurationCharging(int port) {
-		return byteArrayToInt(Arrays.copyOfRange(message, 7, 11));
+	public int getEnergyTotal(int port) { //energy in Wh
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 23+offset, 27+offset));
 	}
-
-	public int getEnergyCharging(int port) {
-		return byteArrayToInt(Arrays.copyOfRange(message, 11, 15));
+	
+	public int getChargingCycleCounter (int port) {
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 27+offset, 31+offset));
 	}
-
-	public int getEnergyTotal(int port) {
-		return byteArrayToInt(Arrays.copyOfRange(message, 23, 27));
+	
+	public boolean isLocked (int port) {
+		if (message[31+offset(port)] == 0x01) {
+			return true;
+		}
+		return false;
 	}
-
+	
+	public boolean contactorIsAktive (int port) {
+		if (message[32+offset(port)] == 0x01){
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean rcdIsAktive (int port) {
+		if (message [33+offset(port)] == 0x01) {
+			return true;
+		}
+		return false;
+	}
+	
+	public int getPwmMinimum (int port) { // PWM in 1/100 V
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 34+offset, 36+offset));
+	}
+	
+	public int getPwmMaximum(int port) { //PWM in 1/100 V
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 36+offset, 38+offset));
+	}
+	
+	public int getVoltage(int port) { // Voltage in 1/100 V
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 38+offset, 40+offset));
+	}
+	
+	public boolean button1Start (int port) { //Start
+		if ((message[40+offset(port)] & 0x01) == 1) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean button2Stop (int port) { // Stop
+		if ((message[40+offset(port)] & 0x02) == 1) {
+			return true;
+		}
+		return false;
+	}
+	public boolean button3OptimizedCharging (int port) { // Optimized Charging
+		if ((message[40+offset(port)] & 0x04) == 1) {
+			return true;
+		}
+		return false;
+	}
+	public boolean button4Spare (int port) { //Spare
+		if ((message[40+offset(port)] & 0x08) == 1) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean ledRedError (int port) { // Error
+		if ((message[40+offset(port)] & 0x10) == 1) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean ledGreenReady (int port) { // On/Ready
+		if ((message[40+offset(port)] & 0x20) == 1) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean ledOrangeOptimizedCharging (int port) { //Optimized charging
+		if ((message[40+offset(port)] & 0x40) == 1) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean ledSpare (int port) { //Spare
+		if ((message[40+offset(port)] & 0x80) == 1) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean rfidLoggedIn (int port) {
+		if ((message[41+offset(port)] & 0x01) == 0x01) {
+			return true;
+		}
+		return false;
+	}
+	
+	public int getRfidNumberOfGroup (int port) {
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 42+offset, 44+offset));
+	}
+	
+	public int getRfidNumberOfCard (int port) {
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 44+offset, 46+offset));
+	}
+	
+	public int getRfidUser (int port) {
+		int offset = offset(port);
+		return byteArrayToInt(Arrays.copyOfRange(message, 46+offset, 54+offset));
+	}
+	
 	public boolean isCharging(int port) {
 		ChargePortStatus status = getStatus(port);
 		if (status == ChargePortStatus.CHARGING) {
@@ -82,15 +225,22 @@ public class ChargePortInfo {
 	public boolean isConnected(int port) {
 		ChargePortStatus status = getStatus(port);
 		if (status == ChargePortStatus.CHARGING ||
-				status == ChargePortStatus.CHARGING_ABORTED ||
-				status == ChargePortStatus.CHARGING_COMPLETE ||
-				status == ChargePortStatus.CHARGING_OPTIMIZED ||
-				status == ChargePortStatus.CHARGING_PAUSE ||
-				status == ChargePortStatus.CHARGING_PAUSE_OPTIMIZED ||
-				status == ChargePortStatus.WAIT_FOR_START) {
+			status == ChargePortStatus.CHARGING_ABORTED ||
+			status == ChargePortStatus.CHARGING_COMPLETE ||
+			status == ChargePortStatus.CHARGING_OPTIMIZED ||
+			status == ChargePortStatus.CHARGING_PAUSE ||
+			status == ChargePortStatus.CHARGING_PAUSE_OPTIMIZED ||
+			status == ChargePortStatus.WAIT_FOR_START) {
 			return true;
 		}
 		return false;
+	}
+	
+	private int offset (int port) {
+		if (port == 2) {
+			return OFFSET;
+		}
+		return 0;
 	}
 
 	private int byteArrayToInt(byte[] b) {

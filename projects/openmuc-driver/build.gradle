@@ -24,7 +24,7 @@ jar {
     name = "OpenMUC Driver - P-CHARGE"
     instruction 'Bundle-ClassPath', '.,lib/pcharge-' + cfgVersion + '.jar'
     instruction 'Import-Package', '!org.openmuc.pcharge.*,*'
-    instruction 'Export-Package', ''
+    instruction 'Export-Package', '!*.internal.*,*'
   }
 }
 

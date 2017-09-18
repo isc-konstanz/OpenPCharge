@@ -81,9 +81,9 @@ public class PChargeMessage {
 		if (response[0] == 0x02) {
 			int endian = response[1]*256 + response[2];
 			if (response[4+endian] == getBCC(Arrays.copyOfRange(response, 1, 4+endian))) {
-
+				
 				MsgId msgId = MsgId.newMsgId(response[3]);
-				return new PChargeMessage(msgId, Arrays.copyOfRange(response, 6, 4+endian));
+				return new PChargeMessage(msgId, Arrays.copyOfRange(response, 4, 4+endian));
 			}
 			else throw new PChargeException("Received invalid Block Check Character (BCC)");
 		}

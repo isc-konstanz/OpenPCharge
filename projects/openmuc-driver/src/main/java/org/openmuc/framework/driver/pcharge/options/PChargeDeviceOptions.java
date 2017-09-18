@@ -23,16 +23,15 @@ package org.openmuc.framework.driver.pcharge.options;
 import org.openmuc.framework.config.options.DeviceOptions;
 import org.openmuc.framework.config.options.Option;
 import org.openmuc.framework.config.options.OptionCollection;
-import org.openmuc.framework.config.options.OptionSelection;
-import org.openmuc.framework.data.IntValue;
 import org.openmuc.framework.data.ValueType;
 
 public class PChargeDeviceOptions extends DeviceOptions {
 
-	private static final String DESCRIPTION = "The description of what a Device represents for this driver.";
+	private static final String DESCRIPTION = "A device represents a port which is connected to the car.";
 
-	public static final String SKELETON_KEY = "skeleton";
-	public static final int SKELETON_DEFAULT = 1;
+	//public static final String CHARGE_PORT = "chargePort";
+	
+	public static final String TCP_PORT = "tcpPort";
 
 	@Override
 	public String getDescription() {
@@ -40,45 +39,29 @@ public class PChargeDeviceOptions extends DeviceOptions {
 	}
 
 	@Override
-	protected void configureAddress(OptionCollection address) {
-		// TODO Implement the device address options
-
-		// If no address options are necessary, they may be disabled
+	protected void configureAddress(OptionCollection address) {		
 		address.disable();
 	}
 
 	@Override
-	protected void configureSettings(OptionCollection settings) {
-		// TODO Implement the device settings options
-		
-		// The default Syntax of "skeleton1:1,skeleton2:2,..." can be changed
-		settings.setSyntax(";", "=");
-		
-		settings.add(skeleton());
+	protected void configureSettings(OptionCollection settings) {		
+		settings.add(tcpPort());
 	}
 
 	@Override
 	protected void configureScanSettings(OptionCollection scanSettings) {
-		// TODO Implement the device scan settings options
-
+		scanSettings.disable();
 	}
 
-	private Option skeleton() {
+	
+	
+	private Option tcpPort(){
+		Option tcpPort = new Option (TCP_PORT, "TCP Port", ValueType.INTEGER);
+		tcpPort.setDescription("TCP Port represents the server port and needs to be entered in the EWS-Box settings");
+		tcpPort.setMandatory(true);
 		
-		Option skeleton = new Option(SKELETON_KEY, "Skeleton", ValueType.INTEGER);
-		skeleton.setDescription("The description of the skeleton option.");
-		skeleton.setMandatory(false);
-		
-		OptionSelection selection = new OptionSelection(ValueType.INTEGER);
-		selection.addInteger(1, "One");
-		selection.addInteger(2, "Two");
-		selection.addInteger(3, "Three");
-		selection.addInteger(4, "Four");
-		selection.addInteger(5, "Five");
-		skeleton.setValueSelection(selection);
-		skeleton.setValueDefault(new IntValue(SKELETON_DEFAULT));
-		
-		return skeleton;
+		return tcpPort;
+	
 	}
 
 }

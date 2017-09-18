@@ -18,27 +18,33 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.driver.pcharge.options.helper;
+package org.openmuc.pcharge.data;
 
-import org.openmuc.framework.config.ArgumentSyntaxException;
-import org.openmuc.framework.config.options.Parameters;
-import org.openmuc.framework.driver.pcharge.options.PChargeDeviceOptions;
+public enum ChargeAuthorizationStatus {
 
-public class DeviceScanSettings {
-
-	private final Parameters scanSettings;
-
-	public DeviceScanSettings(String settings) throws ArgumentSyntaxException {
-		
-		PChargeDeviceOptions options = new PChargeDeviceOptions();
-		this.scanSettings = options.parseScanSettings(settings);
+	SERVER_REQUESTED_START(0x01),
+	START_AUTHORIZED(0x02),
+	UNKNOWN(-1);
+	
+	private final int code;
+	
+	private ChargeAuthorizationStatus (int code) {
+		this.code = code;
 	}
-
-	public int getTcpPort() {
+	
+	 public byte getCode() {
+	     return (byte) code;
+	 }
 		
-		//TODO implement option
-		
-		return -1;
+	public static ChargeAuthorizationStatus newStatus(byte b) {
+		switch(b) {
+		case (byte) 0x01:
+			return SERVER_REQUESTED_START;
+		case (byte) 0x02:
+			return START_AUTHORIZED;
+		default:
+			return UNKNOWN;
+		}
 	}
-
+		
 }

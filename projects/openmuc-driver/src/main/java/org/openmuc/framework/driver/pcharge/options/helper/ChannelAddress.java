@@ -32,13 +32,23 @@ public class ChannelAddress {
 
 		PChargeChannelOptions options = new PChargeChannelOptions();
 		this.address = options.parseAddress(address);
+		
+	}
+
+	public ChannelAddressKey getKey() {
+		
+		if (address.contains(PChargeChannelOptions.KEY))
+			return ChannelAddressKey.valueOf(address.getString(PChargeChannelOptions.KEY));
+		
+		return null;
 	}
 
 	public int getChargePort() {
 		
-		//TODO implement option
+		if (address.contains(PChargeChannelOptions.CHARGE_PORT))
+			return address.getInteger(PChargeChannelOptions.CHARGE_PORT);
 		
 		return -1;
 	}
-
+	
 }

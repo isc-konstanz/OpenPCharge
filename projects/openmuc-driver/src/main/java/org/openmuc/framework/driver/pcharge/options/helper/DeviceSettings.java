@@ -31,12 +31,13 @@ public class DeviceSettings {
 	public DeviceSettings(String settings) throws ArgumentSyntaxException {
 
 		PChargeDeviceOptions options = new PChargeDeviceOptions();
-		this.settings = options.parseAddress(settings);
+		this.settings = options.parseSettings(settings);
 	}
-
+	
 	public int getTcpPort() {
-		
-		//TODO implement option
+		if(settings.contains(PChargeDeviceOptions.TCP_PORT)) {
+			return settings.getInteger(PChargeDeviceOptions.TCP_PORT);
+		}
 		
 		return -1;
 	}
