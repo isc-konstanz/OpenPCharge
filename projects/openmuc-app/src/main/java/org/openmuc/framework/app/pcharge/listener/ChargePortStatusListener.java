@@ -26,7 +26,6 @@ import org.openmuc.framework.data.Record;
 import org.openmuc.framework.dataaccess.Channel;
 import org.openmuc.framework.dataaccess.RecordListener;
 import org.openmuc.framework.driver.pcharge.options.helper.ChannelAddress;
-import org.openmuc.pcharge.data.ChargeAuthorizationStatus;
 import org.openmuc.pcharge.data.ChargeCompleteStatus;
 import org.openmuc.pcharge.data.ChargePortStatus;
 import org.slf4j.Logger;

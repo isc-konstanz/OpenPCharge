@@ -55,7 +55,6 @@ public class PChargeControl extends Thread implements PChargeListenerCallbacks {
 
 	private volatile boolean deactivatedSignal;
 
-	// With the dataAccessService you can access to your measured and control data of your devices.
 	private DataAccessService dataAccessService;
 
 	private Channel chargePortEvent;
@@ -135,7 +134,7 @@ public class PChargeControl extends Thread implements PChargeListenerCallbacks {
 			logger.error("Necessary channels are not configured");
 		}
 	}
-	
+
 	private void startCharging(int port) {
 		long time = System.currentTimeMillis();
 		
@@ -199,7 +198,6 @@ public class PChargeControl extends Thread implements PChargeListenerCallbacks {
 		logger.warn("Timeout: port {}", port);
 		restartCharging(port);
 	}
-	
 
 	@Override
 	public void onChargePortEvent(int port) {
@@ -212,4 +210,3 @@ public class PChargeControl extends Thread implements PChargeListenerCallbacks {
 		dataAccessService.read(recordContainers);
 	}
 }
-

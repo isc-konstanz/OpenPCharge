@@ -37,18 +37,17 @@ public class ChannelAddress {
 
 	public ChannelAddressKey getKey() {
 		
-		if (address.contains(PChargeChannelOptions.KEY))
+		if (address.contains(PChargeChannelOptions.KEY)) {
 			return ChannelAddressKey.valueOf(address.getString(PChargeChannelOptions.KEY));
-		
+		}
 		return null;
 	}
 
-	public int getChargePort() {
+	public Integer getChargePort() {
 		
-		if (address.contains(PChargeChannelOptions.CHARGE_PORT))
+		if (address.contains(PChargeChannelOptions.CHARGE_PORT)) {
 			return address.getInteger(PChargeChannelOptions.CHARGE_PORT);
-		
-		return -1;
+		}
+		return null;
 	}
-	
 }

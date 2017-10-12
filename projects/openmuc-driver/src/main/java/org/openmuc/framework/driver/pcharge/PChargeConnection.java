@@ -108,6 +108,8 @@ public class PChargeConnection implements Connection {
 	
 					message = connection.read();
 					if (message != null && message.getMsgId() == MsgId.INFO) {
+						// If an info message got received first, read again for the correct answer.
+						// TODO: Check if the info message may be ignored for future versions with RFID events
 						message = connection.read();
 					}
 				} catch (IOException e) {
@@ -379,6 +381,8 @@ public class PChargeConnection implements Connection {
 									PChargeMessage message = connection.read();
 									if (message != null) {
 										if (message.getMsgId() == MsgId.INFO) {
+											// If an info message got received first, read again for the correct answer.
+											// TODO: This info message needs to be processed after reading for the correct answer again
 											message = connection.read();
 										}
 										
@@ -430,7 +434,7 @@ public class PChargeConnection implements Connection {
 							
 							break;
 						default:
-							logger.warn("No proper Key");
+							logger.warn("No proper Channel Address Key");
 							break;
 						}
 					}

@@ -34,14 +34,11 @@ import org.openmuc.framework.driver.spi.ConnectionException;
 import org.openmuc.framework.driver.spi.DriverDeviceScanListener;
 import org.openmuc.framework.driver.spi.DriverService;
 import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 @Component
 public class PChargeDriver implements DriverService {
-
-	private final static Logger logger = LoggerFactory.getLogger(PChargeDriver.class);
+//	private final static Logger logger = LoggerFactory.getLogger(PChargeDriver.class);
 
 	private final static String ID = "pcharge";
 	private final static String NAME = "P-CHARGE";
