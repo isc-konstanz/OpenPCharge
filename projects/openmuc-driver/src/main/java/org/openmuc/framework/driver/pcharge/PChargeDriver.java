@@ -24,11 +24,8 @@ import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.DriverInfo;
 import org.openmuc.framework.config.ScanException;
 import org.openmuc.framework.config.ScanInterruptedException;
-import org.openmuc.framework.config.options.ChannelOptions;
-import org.openmuc.framework.config.options.DeviceOptions;
-import org.openmuc.framework.driver.pcharge.options.PChargeChannelOptions;
-import org.openmuc.framework.driver.pcharge.options.PChargeDeviceOptions;
-import org.openmuc.framework.driver.pcharge.options.helper.DeviceSettings;
+import org.openmuc.framework.driver.pcharge.options.PChargeDevicePreferences;
+import org.openmuc.framework.driver.pcharge.options.PChargeDriverInfo;
 import org.openmuc.framework.driver.spi.Connection;
 import org.openmuc.framework.driver.spi.ConnectionException;
 import org.openmuc.framework.driver.spi.DriverDeviceScanListener;
@@ -39,17 +36,11 @@ import org.osgi.service.component.annotations.Component;
 @Component
 public class PChargeDriver implements DriverService {
 //	private final static Logger logger = LoggerFactory.getLogger(PChargeDriver.class);
-
-	private final static String ID = "pcharge";
-	private final static String NAME = "P-CHARGE";
-	private final static String DESCRIPTION = "The description";
-	private final static DeviceOptions DEVICE_OPTIONS = new PChargeDeviceOptions();
-	private final static ChannelOptions CHANNEL_OPTIONS = new PChargeChannelOptions();
-	private final static DriverInfo DRIVER_INFO = new DriverInfo(ID, NAME, DESCRIPTION, DEVICE_OPTIONS, CHANNEL_OPTIONS);
+    private final PChargeDriverInfo info = PChargeDriverInfo.getInfo();
 
 	@Override
 	public DriverInfo getInfo() {
-		return DRIVER_INFO;
+		return info;
 	}
 
 	@Override
@@ -61,19 +52,18 @@ public class PChargeDriver implements DriverService {
 
 	@Override
 	public void interruptDeviceScan() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Connection connect(String deviceAddressStr, String settingsStr) throws ArgumentSyntaxException, ConnectionException {
-
-		DeviceSettings settings = new DeviceSettings(settingsStr);
-		
+	public Connection connect(String addressStr, String settingsStr) throws ArgumentSyntaxException, ConnectionException {
 		try {
-			return new PChargeConnection(settings);
+			PChargeDevicePreferences settings = info.getDevicePreferences(addressStr);
+			
+			return new PChargeDevice(settings.getPort());
 
 		} catch (IllegalArgumentException e) {
-			throw new ArgumentSyntaxException("Unable to configure device: " + e.getMessage());
-			
+			throw new ArgumentSyntaxException("Unable to configure EWS-Box device: " + e.getMessage());
 		}
 	}
 }

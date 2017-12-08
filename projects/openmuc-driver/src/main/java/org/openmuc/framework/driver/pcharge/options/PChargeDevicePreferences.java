@@ -18,27 +18,25 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.driver.pcharge.options.helper;
+package org.openmuc.framework.driver.pcharge.options;
 
-import org.openmuc.framework.config.ArgumentSyntaxException;
-import org.openmuc.framework.config.options.Parameters;
-import org.openmuc.framework.driver.pcharge.options.PChargeDeviceOptions;
+import org.openmuc.framework.config.options.Preferences;
 
-public class DeviceSettings {
+public class PChargeDevicePreferences {
 
-	private final Parameters settings;
+	private static final String PORT_TCP_KEY = "tcpPort";
 
-	public DeviceSettings(String settings) throws ArgumentSyntaxException {
+	protected final Preferences address;
 
-		PChargeDeviceOptions options = new PChargeDeviceOptions();
-		this.settings = options.parseSettings(settings);
+	public PChargeDevicePreferences(Preferences address) {
+		this.address = address;
 	}
-	
-	public int getTcpPort() {
-		if(settings.contains(PChargeDeviceOptions.TCP_PORT)) {
-			return settings.getInteger(PChargeDeviceOptions.TCP_PORT);
+
+	public Integer getPort() {
+		if(address.contains(PORT_TCP_KEY)) {
+			return address.getInteger(PORT_TCP_KEY);
 		}
-		
-		return -1;
+		return null;
 	}
+
 }

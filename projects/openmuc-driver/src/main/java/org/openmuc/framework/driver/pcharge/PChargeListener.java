@@ -28,7 +28,8 @@ import org.openmuc.framework.data.BooleanValue;
 import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.Value;
-import org.openmuc.framework.driver.pcharge.options.helper.ChannelAddress;
+import org.openmuc.framework.driver.pcharge.options.PChargeChannelPreferences;
+import org.openmuc.framework.driver.pcharge.options.PChargeDriverInfo;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.openmuc.pcharge.PChargeException;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class PChargeListener implements Runnable {
 	private final static Logger logger = LoggerFactory.getLogger(PChargeListener.class);
+	private final PChargeDriverInfo info = PChargeDriverInfo.getInfo();
 
 	private static final int SLEEP_INTERVAL = 100;
 
@@ -62,13 +64,13 @@ public class PChargeListener implements Runnable {
 	}
 
 	public void start() {
-		logger.debug("Signaled P-CHARGE info listener to continue");
+		logger.debug("Signal P-CHARGE info listener to continue");
 		
 		listening = true;
 	}
 
 	public void stop() {
-		logger.debug("Signaled P-CHARGE info listener to pause");
+		logger.debug("Signal P-CHARGE info listener to pause");
 		
 		pauseFlag = true;
 		while (pauseFlag) {
@@ -80,7 +82,7 @@ public class PChargeListener implements Runnable {
 	}
 
 	public void terminate() {
-		logger.debug("Signaled P-CHARGE info listener to terminate");
+		logger.debug("Signal P-CHARGE info listener to terminate");
 		
 		running = false;
 		Thread.currentThread().interrupt();
@@ -106,61 +108,10 @@ public class PChargeListener implements Runnable {
 					}
 					
 					if (message != null && message.getMsgId() == MsgId.INFO) {
-						switch(message.getCmdId()) {
-							case INFO:
-								ChargePortEvent event = new ChargePortEvent(message.getMessage()[0]);
-
-								long samplingTime = System.currentTimeMillis();
-
-								for (ChannelRecordContainer container : containers) {
-									try {
-										ChannelAddress address = new ChannelAddress(container.getChannelAddress());
-										//TODO check if port or rfid event through address parameters
-										int port = address.getChargePort();
-										
-										Value value = null;
-										switch(address.getKey()) {
-										case EVENT_PORT:
-											boolean portEvent = event.hasPortEvent(port);
-											if (portEvent) {
-												value = new BooleanValue(portEvent);
-											
-												logger.debug("Event at port: {}", port);
-											}	
-											break;
-										case EVENT_RFID:
-											boolean rfidEvent = event.hasRfidEvent();
-											if (rfidEvent) {
-												value = new BooleanValue(rfidEvent);
-												
-												logger.debug("RFID Event recognized");
-											}	
-											break;
-										default:
-											logger.warn("Unable to listen for channel with key: {}", address.getKey());
-											break;
-										}
-										
-										if(value != null) {
-											container.setRecord(new Record(value, samplingTime, Flag.VALID));
-											logger.debug("Received event flag for listened port {}", port);
-										}
-										
-									} catch (ArgumentSyntaxException e) {
-										logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
-										container.setRecord(new Record(null, samplingTime, Flag.DRIVER_ERROR_READ_FAILURE));
-									}
-								}
-								listener.newRecords(containers);
-								break;
-							default:
-								logger.warn("Received unknown command id: {}", message.getCmdString());
-								break;
-						}
+						handleInfoMessage(message);
 					}
-				
 				} catch (IOException | PChargeException e) {
-			        logger.warn("Receiving client data failed: {}", e.getMessage());
+					logger.warn("Error while listening at P-CHARGE connection: {}", e.getMessage());
 				}
 			}
 			
@@ -168,6 +119,58 @@ public class PChargeListener implements Runnable {
 				Thread.sleep(SLEEP_INTERVAL);
 			} catch (InterruptedException e) {
 			}
+		}
+	}
+
+	public void handleInfoMessage(PChargeMessage message) {
+		switch(message.getCmdId()) {
+		case INFO:
+			ChargePortEvent event = new ChargePortEvent(message.getMessage()[0]);
+			
+			long samplingTime = System.currentTimeMillis();
+			
+			for (ChannelRecordContainer container : containers) {
+				try {
+					PChargeChannelPreferences prefs = info.getChannelPreferences(container);
+					//TODO check if port or rfid event through address parameters
+					int port = prefs.getChargePort();
+					
+					Value value = null;
+					switch (prefs.getKey()) {
+					case EVENT_PORT:
+						boolean portEvent = event.hasPortEvent(port);
+						if (portEvent) {
+							value = new BooleanValue(portEvent);
+						
+							logger.debug("Event at port: {}", port);
+						}
+						break;
+					case EVENT_RFID:
+						boolean rfidEvent = event.hasRfidEvent();
+						if (rfidEvent) {
+							value = new BooleanValue(rfidEvent);
+							
+							logger.debug("RFID Event recognized");
+						}
+						break;
+					default:
+						logger.warn("Unable to listen for Charge Port Key: {}", prefs.getKey());
+						break;
+					}
+					
+					if (value != null) {
+						container.setRecord(new Record(value, samplingTime, Flag.VALID));
+					}
+				} catch (ArgumentSyntaxException e) {
+					logger.warn("Unable to configure channel \"{}\" with settings \"{}\": {}", container.getChannelAddress(), container.getChannelSettings(), e);
+					container.setRecord(new Record(null, samplingTime, Flag.DRIVER_ERROR_READ_FAILURE));
+				}
+			}
+			listener.newRecords(containers);
+			break;
+		default:
+			logger.warn("Unknown Command ID: {}", message.getCmdString());
+			break;
 		}
 	}
 }

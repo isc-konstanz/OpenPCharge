@@ -1,7 +1,7 @@
 configurations.create('embed')
 
 def osgiversion = '4.3.1'
-def openmucversion = '0.17.5'
+def openmucversion = '1.0.0'
 
 repositories {
    flatDir {
@@ -23,7 +23,7 @@ jar {
   manifest {
     name = "OpenMUC Driver - P-CHARGE"
     instruction 'Bundle-ClassPath', '.,lib/pcharge-' + cfgVersion + '.jar'
-    instruction 'Import-Package', '!org.openmuc.pcharge.*,*'
+    instruction 'Import-Package', '!org.openmuc.pcharge.*,*' + jarDefaultImportPackageVersion
     instruction 'Export-Package', '!*.internal.*,*'
   }
 }

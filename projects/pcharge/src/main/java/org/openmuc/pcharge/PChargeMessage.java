@@ -60,6 +60,10 @@ public class PChargeMessage {
 		return getMessage(true);
 	}
 
+	public PChargeMessage copy() {
+		return new PChargeMessage(msgId, message);
+	}
+
 	/**
 	 * Returns the Block Check Character of a given byte array.
 	 * 

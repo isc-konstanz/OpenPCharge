@@ -36,8 +36,8 @@ import org.openmuc.framework.data.IntValue;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.TypeConversionException;
 import org.openmuc.framework.data.Value;
-import org.openmuc.framework.driver.pcharge.options.helper.ChannelAddress;
-import org.openmuc.framework.driver.pcharge.options.helper.DeviceSettings;
+import org.openmuc.framework.driver.pcharge.options.PChargeChannelPreferences;
+import org.openmuc.framework.driver.pcharge.options.PChargeDriverInfo;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
 import org.openmuc.framework.driver.spi.Connection;
@@ -59,8 +59,10 @@ import org.slf4j.LoggerFactory;
 
 
 @Component
-public class PChargeConnection implements Connection {
-	private final static Logger logger = LoggerFactory.getLogger(PChargeConnection.class);
+public class PChargeDevice implements Connection {
+	private final static Logger logger = LoggerFactory.getLogger(PChargeDevice.class);
+	private final PChargeDriverInfo info = PChargeDriverInfo.getInfo();
+	
 	private static final int CURRENT_LIMIT = 32;
 
 	private final ExecutorService executor;
@@ -68,10 +70,7 @@ public class PChargeConnection implements Connection {
 
 	private PChargeListener listener = null;
 
-	public PChargeConnection(DeviceSettings settings) throws ConnectionException {
-		
-		int port = settings.getTcpPort();
-		
+	public PChargeDevice(int port) throws ConnectionException {
 		logger.info("Opening P-CHARGE TCP connection at port {}", port);
 		try {
 			connection = new PChargeSocket(port);
@@ -87,7 +86,7 @@ public class PChargeConnection implements Connection {
 	public List<ChannelScanInfo> scanForChannels(String settings)
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ConnectionException {
 		
-		// TODO Auto-generated method stub
+		// TODO return the list of all possible Channels
 		return null;
 	}
 
@@ -109,12 +108,12 @@ public class PChargeConnection implements Connection {
 					message = connection.read();
 					if (message != null && message.getMsgId() == MsgId.INFO) {
 						// If an info message got received first, read again for the correct answer.
-						// TODO: Check if the info message may be ignored for future versions with RFID events
+						// TODO: Check if the info message may be necessary for future versions with RFID events
 						message = connection.read();
 					}
 				} catch (IOException e) {
 					connection.close();
-					throw new ConnectionException("P-CHARGE connection failed: " + e.getMessage());
+					throw new ConnectionException("Connection to EWS-Box failed: " + e.getMessage());
 				}
 			}
 			
@@ -125,200 +124,200 @@ public class PChargeConnection implements Connection {
 						
 						for (ChannelRecordContainer container : containers) {
 							try {
-								ChannelAddress address = new ChannelAddress(container.getChannelAddress());
+								PChargeChannelPreferences prefs = info.getChannelPreferences(container);
 								
-								int port = address.getChargePort();
+								int port = prefs.getChargePort();
 								
 								Value value = null;
-								switch(address.getKey()) {
+								switch(prefs.getKey()) {
 								case STATUS:
 									ChargePortStatus status = chargePort.getStatus(port);
 
 									value = new ByteValue(status.getCode());
-									logger.debug("Status of Port {}: {}", port, value);
+									logger.debug("Read Status of Port {}: {}", port, value);
 									break;
-								case CURRENT_CABLE:
+								case CABLE_CURRENT:
 									int current = chargePort.getCableCurrent(port);
 									
 									value = new IntValue(current);
-									logger.debug("Current of Port {}: {} A", port, value);
+									logger.debug("Read Cable Current of Port {}: {} A", port, value);
 									break;
-								case CURRENT_LIMIT:
+								case CHARGING_CURRENT:
 									int currentLimit = chargePort.getCurrentLimit(port);
 									
 									value = new IntValue(currentLimit);
-									logger.debug("Current limit of Port {}: {} A", port, value);
+									logger.debug("Read Charging Current of Port {}: {} A", port, value);
 									break;
 								case VENTILATION_REQUEST:
 									boolean ventilationRequested = chargePort.ventilationIsRequested(port);
 									
 									value = new BooleanValue(ventilationRequested);
-									logger.debug("Ventialtion ist requested for port {}: {}", port,value);
+									logger.debug("Read Ventilation Request of Port {}: {}", port,value);
 									break;
-								case STATUS_AUTHORIZATION:
+								case CHARGING_AUTHORIZATION_STATUS:
 									ChargeAuthorizationStatus authorizationStatus = chargePort.getChargeAuthorizationStatus(port);
 									
 									value = new ByteValue(authorizationStatus.getCode());
-									logger.debug("Authorization status of Port {}: {}", port, value);
+									logger.debug("Read Charging Authorization Status of Port {}: {}", port, value);
 									break;
-								case OPTIMIZED_CHARGING:
+								case CHARGING_OPTIMIZED:
 									boolean isOptimized = chargePort.isOptimized(port);
 									
 									value = new BooleanValue(isOptimized);
-									logger.debug("Ventialtion ist requested for port {}: {}", port,value);
+									logger.debug("Read Charging Optimization of Port {}: {}", port,value);
 									break;
-								case STATUS_COMPLETE:
+								case CHARGING_COMPLETE_STATUS:
 									ChargeCompleteStatus completeStatus = chargePort.getCompleteStatus(port);
 									
 									value = new ByteValue(completeStatus.getCode());
-									logger.debug("Complete status of Port {}: {}", port, value);
+									logger.debug("Read Charging Complete Status of Port {}: {}", port, value);
 									break;
-								case DURATION_CHARGING:
-									int durationCharging = chargePort.getDurationCharging(port);
+								case CHARGING_DURATION:
+									int chargingDuration = chargePort.getDurationCharging(port);
 									
-									value = new IntValue(durationCharging);
-									logger.debug("Duration of present charging process of Port {}: {} seconds", port, value);
+									value = new IntValue(chargingDuration);
+									logger.debug("Read Charging Duration of Port {}: {} seconds", port, value);
 									break;
-								case ENERGY_CHARGING:
-									double energyCharging = ((double) chargePort.getEnergyCharging(port));
+								case CHARGING_ENERGY:
+									double chargingEnergy = ((double) chargePort.getEnergyCharging(port));
 									
-									value = new DoubleValue(energyCharging);
-									logger.debug("Energy of present charing process of Port {}: {} Wh", port, value);
+									value = new DoubleValue(chargingEnergy);
+									logger.debug("Read Charging Energy Consumption of Port {}: {} Wh", port, value);
 									break;
-								case DURATION_LAST_CHARGING:
-									int lastChargingTime = chargePort.getLastChargingTime(port);
+								case CHARGING_DURATION_LAST:
+									int chargingDurationLast = chargePort.getLastChargingTime(port);
 									
-									value = new IntValue(lastChargingTime);
-									logger.debug("Duration of last charging process of Port {}: {} seconds", port, value);
+									value = new IntValue(chargingDurationLast);
+									logger.debug("Read Charging Duration of last Charging Period of Port {}: {} seconds", port, value);
 									break;
-								case ENERGY_TOTAL:
-									double energyTotal = ((double) chargePort.getEnergyTotal(port))/1000; //change unit from Wh to kWh
+								case CHARGING_ENERGY_TOTAL:
+									double chargingEnergyTotal = ((double) chargePort.getEnergyTotal(port))/1000; //change unit from Wh to kWh
 									
-									value = new DoubleValue(energyTotal);
-									logger.debug("Total Energy consumption of Port {}: {} kWh", port, value);
+									value = new DoubleValue(chargingEnergyTotal);
+									logger.debug("Read Total Energy Consumption of Port {}: {} kWh", port, value);
 									break;
-								case COUNTER_CHARGING_CYCLES:
+								case CHARGING_CYCLE_COUNTER:
 									int chargingCyclesCounter = chargePort.getChargingCycleCounter(port);
 									
 									value = new IntValue(chargingCyclesCounter);
-									logger.debug("Amount of charging cycles of Port {}: {}", port, value);
+									logger.debug("Read Charging Cycles of Port {}: {}", port, value);
 									break;
 								case LOCKED:
 									boolean isLocked = chargePort.isLocked(port);
 									
 									value = new BooleanValue(isLocked);
-									logger.debug("The plug is locked on port {}: {}", port,value);
+									logger.debug("Read Plug Lock State of Port {}: {}", port, value);
 									break;
 								case CONTACTOR:
-									boolean contactorIsAktive = chargePort.contactorIsAktive(port);
+									boolean contactorState = chargePort.contactorIsAktive(port);
 									
-									value = new BooleanValue(contactorIsAktive);
-									logger.debug("Contacor of port {} is aktive: {}", port,value);
+									value = new BooleanValue(contactorState);
+									logger.debug("Read Contactor State of Port {}: {}", port, value);
 									break;
 								case RCD:
-									boolean rcdIsAktive = chargePort.contactorIsAktive(port);
+									boolean rcdState = chargePort.contactorIsAktive(port);
 									
-									value = new BooleanValue(rcdIsAktive);
-									logger.debug("RCD of port {} is aktive: {}", port,value);
+									value = new BooleanValue(rcdState);
+									logger.debug("Read RCD State of Port {}: {}", port, value);
 									break;
 								case PWM_MINIMUM:
 									int pwmMinimum = chargePort.getPwmMinimum(port);
 									
 									value = new IntValue(pwmMinimum);
-									logger.debug("Minimum Voltage of PWM of Port {}: {} V/100", port, value);
+									logger.debug("Read Minimum PWM Voltage of Port {}: {} V/100", port, value);
 									break;
 								case PWM_MAXIMUM:
 									int pwmMaximum = chargePort.getPwmMaximum(port);
 									
 									value = (new IntValue(pwmMaximum));
-									logger.debug("Maximim Voltage of PWM of Port {}: {} V/100", port, value);
+									logger.debug("Read Maximim PWM Voltage of Port {}: {} V/100", port, value);
 									break;
-								case VOLTAGE:
+								case CABLE_VOLTAGE:
 									int voltage = chargePort.getVoltage(port);
 									
 									value = new IntValue(voltage);
-									logger.debug("Voltage of the cable of Port {}: {} V/100", port, value);
+									logger.debug("Read Cable Voltage of Port {}: {} V/100", port, value);
 									break;
 								case BUTTON_1_START:
 									boolean button1Start = chargePort.button1Start(port);
 									
 									value = new BooleanValue(button1Start);
-									logger.debug("Button 1 START of port {} is pressed: {}", port,value);
+									logger.debug("Read Start Button State of Port {}: {}", port, value);
 									break;
 								case BUTTON_2_STOP:
 									boolean button2Stop = chargePort.button2Stop(port);
 									
 									value = new BooleanValue(button2Stop);
-									logger.debug("Button 2 STOP of port {} is pressed: {}", port,value);
+									logger.debug("Read Stop Button State of Port {}: {}", port, value);
 									break;
 								case BUTTON_3_OPTIMIZED:
 									boolean button3Optimized = chargePort.button3OptimizedCharging(port);
 									
 									value = new BooleanValue(button3Optimized);
-									logger.debug("Button  of port {} is pressed: {}", port,value);
+									logger.debug("Read Optimized Charging Button State of Port {}: {}", port, value);
 									break;
 								case BUTTON_4_SPARE:
 									boolean button4Spare = chargePort.button4Spare(port);
 									
 									value = new BooleanValue(button4Spare);
-									logger.debug("Button 4 SPARE of port {} is pressed: {}", port,value);
+									logger.debug("Read Spare Button State of Port {}: {}", port, value);
 									break;
 								case LED_RED_ERROR:
 									boolean ledRedError = chargePort.ledRedError(port);
 									
 									value = new BooleanValue(ledRedError);
-									logger.debug("Red LED ERROR of port {} is on: {}", port,value);
+									logger.debug("Read Red Error LED State of Port {}: {}", port, value);
 									break;
 								case LED_GREEN_READY:
 									boolean ledGreenReady = chargePort.ledGreenReady(port);
 									
 									value = new BooleanValue(ledGreenReady);
-									logger.debug("Green LED READY of port {} is on: {}", port,value);
+									logger.debug("Read Green Ready LED State of Port {}: {}", port, value);
 									break;
 								case LED_ORANGE_OPTIMIZED:
 									boolean ledOrangeOptimized = chargePort.ledOrangeOptimizedCharging(port);
 									
 									value = new BooleanValue(ledOrangeOptimized);
-									logger.debug("Orange LED OPTIMIZED CHARGING of port {} is on: {}", port,value);
+									logger.debug("Read Orange Optimized Charging LED State of Port {}: {}", port, value);
 									break;
 								case LED_SPARE:
 									boolean ledSpare = chargePort.ledSpare(port);
 									
 									value = new BooleanValue(ledSpare);
-									logger.debug("LED SPARE of port {} is on: {}", port,value);
+									logger.debug("Read Spare LED State of Port {}: {}", port, value);
 									break;
-								case RFID_LOGGED_IN:
+								case RFID_LOGIN:
 									boolean rfidLoggedIn = chargePort.rfidLoggedIn(port);
 									
 									value = new BooleanValue(rfidLoggedIn);
-									logger.debug("RFID is logged in on port {} the following data is valid: {}", port,value);
+									logger.debug("Read RFID Login State of Port {}: {}", port, value);
 									break;
 								case RFID_GROUP:
 									int rfidNumberOfGroup = chargePort.getRfidNumberOfGroup(port);
 									
 									value = new IntValue(rfidNumberOfGroup);
-									logger.debug("The RFID Number of the Group of the registered card on port {} is: {} ", port, value);
+									logger.debug("Read RFID Group Number of Port {}: {}", port, value);
 									break;
 								case RFID_CARD:
 									int rfidNumberOfCard = chargePort.getRfidNumberOfCard(port);
 									
 									value = new IntValue(rfidNumberOfCard);
-									logger.debug("The RFID Number of the Card on port {} is: {} ", port, value);
+									logger.debug("Read RFID Card Number of Port {}: {}", port, value);
 									break;
 								case RFID_USER:
 									int rfidUser = chargePort.getRfidUser(port);
 									
 									value = new IntValue(rfidUser);
-									logger.debug("The RFID User on port {} is: {} ", port, value);
+									logger.debug("Read RFID User of Port {}: {} ", port, value);
 									break;
-								default: 
-									throw new ArgumentSyntaxException("Unknown channel address key: " + address.getKey().name());
+								default:
+									throw new ArgumentSyntaxException("Unknown Charge Port Key: " + prefs.getKey().name());
 								}
-								container.setRecord(new Record(value, samplingTime, Flag.VALID));
 								
+								container.setRecord(new Record(value, samplingTime, Flag.VALID));
 							}
 							catch (ArgumentSyntaxException e) {
-								logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e);
+								logger.warn("Unable to configure channel \"{}\" with settings \"{}\": {}", container.getChannelAddress(), container.getChannelSettings(), e);
 								container.setRecord(new Record(null, samplingTime, Flag.DRIVER_ERROR_READ_FAILURE));
 							}
 					
@@ -326,7 +325,7 @@ public class PChargeConnection implements Connection {
 						break;
 					
 					default:
-						logger.warn("Received unknown command id: {}", message.getCmdString());
+						logger.warn("Unknown Command ID: {}", message.getCmdString());
 						break;
 				}
 			}
@@ -357,18 +356,20 @@ public class PChargeConnection implements Connection {
 		if (listener != null) {
 			listener.stop();
 		}
+
+		PChargeMessage messageInfo = null;
 		try {
 			for (ChannelValueContainer container : containers) {
 				try {
 					synchronized(connection) {
-						ChannelAddress address = new ChannelAddress(container.getChannelAddress());
+						PChargeChannelPreferences prefs = info.getChannelPreferences(container);
 	
-						int port = address.getChargePort();
+						int port = prefs.getChargePort();
 						Value value = container.getValue();
 						
-						switch(address.getKey()) {
-						case CURRENT_LIMIT:
-							logger.debug("Current limit of port {}: {}A", port, value);
+						switch(prefs.getKey()) {
+						case CHARGING_CURRENT:
+							logger.debug("Set Current Limit of Port {}: {}A", port, value);
 							try {
 								int limit = value.asInt();
 								
@@ -382,7 +383,7 @@ public class PChargeConnection implements Connection {
 									if (message != null) {
 										if (message.getMsgId() == MsgId.INFO) {
 											// If an info message got received first, read again for the correct answer.
-											// TODO: This info message needs to be processed after reading for the correct answer again
+											messageInfo = message.copy();
 											message = connection.read();
 										}
 										
@@ -399,12 +400,12 @@ public class PChargeConnection implements Connection {
 								}
 							}
 							catch (TypeConversionException e) {
-								logger.warn("The passed current limit is not an Integer: {}", value.toString());
+								logger.warn("Passed Current Limit is not an Integer: {}", value.toString());
 								container.setFlag(Flag.DRIVER_ERROR_CHANNEL_VALUE_TYPE_CONVERSION_EXCEPTION);
 							}
 							break;
 						case STATUS:
-							logger.debug("Status of port {}: {}", port, value);
+							logger.debug("Set Status of Port {}: {}", port, value);
 							try {
 								ChargePortStartStop startStop = ChargePortStartStop.newStatus(value.asInt());
 								
@@ -426,31 +427,32 @@ public class PChargeConnection implements Connection {
 										logger.warn("Unknown error while setting status of port {}: {}", port, startStop.name());
 									}
 								}
-							}
-							catch (TypeConversionException | IllegalArgumentException e) {
+							} catch (TypeConversionException | IllegalArgumentException e) {
 								logger.warn("Type conversion failed: {}", e.getMessage());
 								container.setFlag(Flag.DRIVER_ERROR_CHANNEL_VALUE_TYPE_CONVERSION_EXCEPTION);
 							}
-							
 							break;
 						default:
-							logger.warn("No proper Channel Address Key");
+							logger.warn("Unknown Charge Port Key: " + prefs.getKey().name());
 							break;
 						}
 					}
 				}
 				catch (ArgumentSyntaxException e) {
-					logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e);
+					logger.warn("Unable to configure channel \"{}\" with settings \"{}\": {}", container.getChannelAddress(), container.getChannelSettings(), e);
 				}
 			}
 		} catch (PChargeException e) {
-			logger.debug("Error while reading P-CHARGE write response: {}", e.getMessage());
+			logger.debug("Error while reading P-CHARGE connection: {}", e.getMessage());
 			
 		} catch (IOException e) {
 			connection.close();
-			throw new ConnectionException("P-CHARGE connection failed: " + e.getMessage());
+			throw new ConnectionException("Connection to EWS-Box failed: " + e.getMessage());
 		}
 		if (listener != null) {
+			if (messageInfo != null) {
+				listener.handleInfoMessage(messageInfo);
+			}
 			listener.start();
 		}
 		return null;
@@ -461,6 +463,6 @@ public class PChargeConnection implements Connection {
 		logger.info("Closing P-CHARGE connection");
 
 		connection.close();
-        executor.shutdown();
+		executor.shutdown();
 	}
 }
