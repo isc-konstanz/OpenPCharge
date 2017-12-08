@@ -1,17 +1,16 @@
-
 project.ext {
 
   cfgVersion = '0.1.1'
 
   cfgGroup = 'org.openmuc'
 
-  cfgCopyDependencies = true
+  cfgCopyDependencies = false
 
-  cfgCopyArtefacts = true
-
-  cfgCopyToRoot = true
+  cfgCopyToRoot = false
 
   javaProjects = subprojects
+
+  jarDefaultImportPackageVersion=";version=0"
 
   distributionProjects = subprojects.findAll {
     it.getPath() == ":pcharge" ||
@@ -37,7 +36,7 @@ tasks.withType(Tar) {
     from("./") {
       include "build.gradle"
       include "configuration.gradle"
-      include "license/**"
+      include "LICENSE**"
       include "gradle/wrapper/**"
       include "gradlew"
       include "gradlew.bat"
@@ -55,7 +54,6 @@ tasks.withType(Tar) {
       for (Project myproject: distributionProjects) {
         include myproject.getProjectDir().toString().substring((int)(getProjectDir().toString().size() + 1)) + "/**";
       }
-
     }
 
     if (name.equals("tar") ){
@@ -64,6 +62,12 @@ tasks.withType(Tar) {
 
     from("./build/") {
       include "settings.gradle"
+    }
+  }
+
+  into(project.name + "/doc/") {
+    from("./build/docs/") {
+      include "javadoc/**"
     }
   }
 }
