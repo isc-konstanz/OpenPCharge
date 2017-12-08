@@ -1,6 +1,6 @@
 project.ext {
 
-  cfgVersion = '0.1.1'
+  cfgVersion = '0.2.0'
 
   cfgGroup = 'org.openmuc'
 
@@ -30,7 +30,7 @@ configure(javaProjects) {
 }
 
 tasks.withType(Tar) {
-  
+
   into(project.name) {
 
     from("./") {
@@ -42,7 +42,6 @@ tasks.withType(Tar) {
       include "gradlew.bat"
       include "build/libs/**"
       include "dependencies/**"
-      include "src/**"
 
       exclude "**/projects/**/bin"
       exclude "**/projects/**/build"
