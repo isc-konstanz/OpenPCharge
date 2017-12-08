@@ -18,37 +18,29 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.app.pcharge.listener;
+package org.openmuc.framework.app.pcharge.port;
 
-import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
-import org.openmuc.framework.dataaccess.Channel;
 import org.openmuc.framework.dataaccess.RecordListener;
-import org.openmuc.framework.driver.pcharge.options.helper.ChannelAddress;
-
 
 public class ChargePortEventListener implements RecordListener {
-	
-	private final int port;
-	private final PChargeListenerCallbacks callbacks;
-	
-	public ChargePortEventListener(PChargeListenerCallbacks callbacks, Channel event) throws ArgumentSyntaxException {
+
+	private final ChargePortListenerCallbacks callbacks;
+
+	public ChargePortEventListener(ChargePortListenerCallbacks callbacks) {
 		this.callbacks = callbacks;
-		ChannelAddress address = new ChannelAddress(event.getChannelAddress());
-		
-		port = address.getChargePort();
 	}
-	
+
 	@Override
 	public void newRecord(Record record) {
 		if (isValid(record)) {
 			if (record.getValue().asBoolean()){
-				callbacks.onChargePortEvent(port);
+				callbacks.onChargePortEvent();
 			}
 		}
 	}
-	
+
 	private boolean isValid(Record record) {
 		if (record != null && record.getFlag() == Flag.VALID) {
 			return true;
@@ -57,4 +49,3 @@ public class ChargePortEventListener implements RecordListener {
 	}
 
 }
-

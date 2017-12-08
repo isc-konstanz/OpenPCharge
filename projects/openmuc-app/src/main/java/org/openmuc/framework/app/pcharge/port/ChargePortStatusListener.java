@@ -18,36 +18,32 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.app.pcharge.listener;
+package org.openmuc.framework.app.pcharge.port;
 
-import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.dataaccess.Channel;
 import org.openmuc.framework.dataaccess.RecordListener;
-import org.openmuc.framework.driver.pcharge.options.helper.ChannelAddress;
 import org.openmuc.pcharge.data.ChargeCompleteStatus;
 import org.openmuc.pcharge.data.ChargePortStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class ChargePortStatusListener implements RecordListener {
 	private static final Logger logger = LoggerFactory.getLogger(ChargePortStatusListener.class);
-	
-	private final int port;
-	private final Channel statusComplete;
-	
-	private final PChargeListenerCallbacks callbacks;
-	
-	public ChargePortStatusListener(PChargeListenerCallbacks callbacks, Channel status, Channel statusComplete) throws ArgumentSyntaxException {
-		this.callbacks = callbacks;
-		this.statusComplete = statusComplete;
 
-		ChannelAddress address = new ChannelAddress(status.getChannelAddress());
-		port = address.getChargePort();
+	private final ChargePortListenerCallbacks callbacks;
+
+	private final String id;
+	private final Channel statusComplete;
+
+	public ChargePortStatusListener(ChargePortListenerCallbacks callbacks, String id, Channel statusComplete) {
+		this.callbacks = callbacks;
+		
+		this.id = id;
+		this.statusComplete = statusComplete;
 	}
-	
+
 	@Override
 	public void newRecord(Record record) {
 		if (isValid(record)) {
@@ -63,28 +59,27 @@ public class ChargePortStatusListener implements RecordListener {
 			
 			switch (status) {
 			case WAIT_FOR_START:
-				logger.debug("Electric vehicle detected on port {}, requesting to start charging", port);
+				logger.debug("Electric vehicle detected at \"{}\", requesting to start charging", id);
 				
-				callbacks.onWaitForStart(port);
+				callbacks.onWaitForStart();
 				break;
 			
 			case CHARGING_PAUSE:
 			case CHARGING_PAUSE_OPTIMIZED:
-				logger.debug("Electric vehicle on port {} aborted charging: "
-						+ "Paused", port);
+				logChargingAbort("Paused");
 				
-				callbacks.onChargingPaused(port);
+				callbacks.onChargingPaused();
 				break;
 			case CHARGING_COMPLETE:
 				switch(completeStatus) {
 				case OK_COMPLETE:
-					logger.debug("Electric vehicle on port {} completed charging successfully", port);
+					logger.debug("Electric vehicle at \"{}\" completed charging successfully", id);
 					break;
 				case OK_STOP:
-					logger.debug("Electric vehicle on port {} aborted charging: "
-							+ "Stopped by user", port);
+					logger.debug("Electric vehicle at \"{}\" aborted charging: "
+							+ "Stopped by user", id);
 					
-					callbacks.onChargingStopped(port);
+					callbacks.onChargingStopped();
 					break;
 				default:
 					break;
@@ -92,82 +87,74 @@ public class ChargePortStatusListener implements RecordListener {
 			case CHARGING_ABORTED:
 				switch(completeStatus) {
 				case OK_STOP:
-					logger.debug("Electric vehicle on port {} aborted charging: "
-							+ "Stopped by user", port);
+					logChargingAbort("Stopped by user");
 					
-					callbacks.onChargingStopped(port);
+					callbacks.onChargingStopped();
 					break;
 				case OK_CABLE_PULLED:
-					logger.debug("Electric vehicle on port {} aborted charging: "
-							+ "Cable got removed by user", port);
+					logChargingAbort("Cable got removed by user");
 					break;
 				case ERROR_CABLE_LOST:
-					logger.warn("Electric vehicle on port {} aborted charging: "
-							+ "Lost contact to cable", port);
+					logChargingAbort("Lost contact to cable");
 					break;
 				case ERROR_CIRCUIT_BREAKER:
-					logger.warn("Electric vehicle on port {} aborted charging: "
-							+ "Circuit breaker fault detected", port);
+					logChargingAbort("Circuit breaker fault detected");
 					break;
 				case ERROR_METER:
-					logger.warn("Electric vehicle on port {} aborted charging: "
-							+ "Current meter fault detected", port);
+					logChargingAbort("Current meter fault detected");
 					break;
 				case ERROR_TIMEOUT:
-					logger.warn("Electric vehicle on port {} aborted charging: "
-							+ "Server timeout", port);
+					logChargingAbort("Server timeout");
 					
-					callbacks.onTimeout(port);
+					callbacks.onTimeout();
 					break;
 				case ERROR_VENTING:
-					logger.warn("Electric vehicle on port {} aborted charging: "
-							+ "Venting not supported", port);
+					logChargingAbort("Venting not supported");
 					break;
 				case ERROR_PMW:
-					logger.warn("Electric vehicle on port {} aborted charging: "
-							+ "PMW-signal unstable. Charging interrupted to avoid damage", port);
+					logChargingAbort("PMW-signal unstable. Charging interrupted to avoid damage");
 					break;
 				default:
 					break;
 				}
 			case ERROR_CABLE_CURRENT:
-				logger.warn("Error detected on port {}: "
-						+ "Cable current", port);
+				logErrorWarning("Cable current");
 				break;
 			case ERROR_LOCKING:
-				logger.warn("Error detected on port {}: "
-						+ "Locking", port);
+				logErrorWarning("Locking");
 				break;
 			case ERROR_UNLOCKING:
-				logger.warn("Error detected on port {}: "
-						+ "Unlocking", port);
+				logErrorWarning("Unlocking");
 				break;
 			case ERROR_RELAIS_ON:
-				logger.warn("Error detected on port {}: "
-						+ "Switchign relais on", port);
+				logErrorWarning("Switchign relais on");
 				break;
 			case ERROR_RELAIS_OFF:
-				logger.warn("Error detected on port {}: "
-						+ "Switchign relais off", port);
+				logErrorWarning("Switchign relais off");
 				break;
 			case ERROR_CONFIG_INVALID:
-				logger.warn("Error detected on port {}: "
-						+ "Confiuration invalid", port);
+				logErrorWarning("Confiuration invalid");
 				break;
 			case ERROR_VENTING:
-				logger.warn("Error detected on port {}: "
-						+ "Ventilation", port);
+				logErrorWarning("Ventilation");
 				break;
 			case PORT_BUSY:
-				logger.warn("Error detected on port {}: "
-						+ "Busy", port);
+				logErrorWarning("Busy");
 				break;
 			default:
 				break;
 			}
 		}
 	}
-	
+
+	private void logChargingAbort(String message) {
+		logger.warn("Electric vehicle at \"{}\" aborted charging: {}", id, message);
+	}
+
+	private void logErrorWarning(String message) {
+		logger.warn("Error detected at \"{}\": {}", id, message);
+	}
+
 	private boolean isValid(Record record) {
 		if (record != null && record.getFlag() == Flag.VALID) {
 			return true;
@@ -176,4 +163,3 @@ public class ChargePortStatusListener implements RecordListener {
 	}
 
 }
-

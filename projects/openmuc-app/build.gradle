@@ -1,5 +1,7 @@
 configurations.create('embed')
 
+def ini4jversion = '0.5.4'
+
 repositories {
    flatDir {
        dirs rootDir.getPath() + '/dependencies/openmuc'
@@ -9,13 +11,16 @@ repositories {
 dependencies {
   compile project(':openmuc-driver-pcharge')
   embed project(':pcharge')
+
+  compile group: 'org.ini4j', name: 'ini4j', version: ini4jversion
+  embed group: 'org.ini4j', name: 'ini4j', version: ini4jversion
 }
 
 jar {
   manifest {
     name = "OpenMUC App - P-CHARGE"
-    instruction 'Bundle-ClassPath', '.,lib/pcharge-' + cfgVersion + '.jar'
-    instruction 'Import-Package', '!org.openmuc.pcharge.*,*'
+    instruction 'Bundle-ClassPath', '.,lib/pcharge-' + cfgVersion + '.jar,lib/ini4j-' + ini4jversion + '.jar'
+    instruction 'Import-Package', '!org.openmuc.pcharge.*,!org.ini4j.*,*'
     instruction 'Export-Package', ''
   }
 }
