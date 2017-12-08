@@ -58,7 +58,7 @@ public class PChargeDriver implements DriverService {
 	@Override
 	public Connection connect(String addressStr, String settingsStr) throws ArgumentSyntaxException, ConnectionException {
 		try {
-			PChargeDevicePreferences settings = info.getDevicePreferences(addressStr);
+			PChargeDevicePreferences settings = info.getDevicePreferences(settingsStr);
 			
 			return new PChargeDevice(settings.getPort());
 
