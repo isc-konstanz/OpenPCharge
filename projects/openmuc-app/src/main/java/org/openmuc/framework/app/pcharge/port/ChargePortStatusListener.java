@@ -22,144 +22,76 @@ package org.openmuc.framework.app.pcharge.port;
 
 import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
-import org.openmuc.framework.dataaccess.Channel;
 import org.openmuc.framework.dataaccess.RecordListener;
-import org.openmuc.pcharge.data.ChargeCompleteStatus;
 import org.openmuc.pcharge.data.ChargePortStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ChargePortStatusListener implements RecordListener {
-	private static final Logger logger = LoggerFactory.getLogger(ChargePortStatusListener.class);
 
 	private final ChargePortListenerCallbacks callbacks;
 
-	private final String id;
-	private final Channel statusComplete;
+	private final int startIntervalMin;
+	private volatile long startTimeLast = 0;
+	private volatile ChargePortStatus statusLast = null;
 
-	public ChargePortStatusListener(ChargePortListenerCallbacks callbacks, String id, Channel statusComplete) {
+	public ChargePortStatusListener(ChargePortListenerCallbacks callbacks, int interval) {
 		this.callbacks = callbacks;
-		
-		this.id = id;
-		this.statusComplete = statusComplete;
+		this.startIntervalMin = interval;
 	}
 
 	@Override
 	public void newRecord(Record record) {
-		if (isValid(record)) {
+		if (record != null && record.getFlag() == Flag.VALID) {
 			ChargePortStatus status = ChargePortStatus.newStatus(record.getValue().asByte());
-
-			ChargeCompleteStatus completeStatus = ChargeCompleteStatus.UNKNOWN_STATUS;
-			if(statusComplete != null) {
-				Record completeStatusRecord = statusComplete.getLatestRecord();
-				if (isValid(completeStatusRecord)) {
-					completeStatus = ChargeCompleteStatus.newStatus(completeStatusRecord.getValue().asByte());
+			
+			if (status == ChargePortStatus.WAIT_FOR_START) {
+				if (statusLast == ChargePortStatus.NOT_CONNECTED ||
+						System.currentTimeMillis() - startTimeLast >= startIntervalMin) {
+					
+					callbacks.onChargingStartRequest();
 				}
 			}
-			
-			switch (status) {
-			case WAIT_FOR_START:
-				logger.debug("Electric vehicle detected at \"{}\", requesting to start charging", id);
-				
-				callbacks.onWaitForStart();
-				break;
-			
-			case CHARGING_PAUSE:
-			case CHARGING_PAUSE_OPTIMIZED:
-				logChargingAbort("Paused");
-				
-				callbacks.onChargingPaused();
-				break;
-			case CHARGING_COMPLETE:
-				switch(completeStatus) {
-				case OK_COMPLETE:
-					logger.debug("Electric vehicle at \"{}\" completed charging successfully", id);
+			else if (statusLast != status) {
+				switch (status) {
+				case CHARGING_PAUSE:
+				case CHARGING_PAUSE_OPTIMIZED:
+					callbacks.onChargingPaused();
 					break;
-				case OK_STOP:
-					logger.debug("Electric vehicle at \"{}\" aborted charging: "
-							+ "Stopped by user", id);
-					
-					callbacks.onChargingStopped();
+				case CHARGING_COMPLETE:
+					callbacks.onChargingComplete();
 					break;
-				default:
+				case CHARGING_ABORTED:
+					callbacks.onChargingAborted();
 					break;
-				}
-			case CHARGING_ABORTED:
-				switch(completeStatus) {
-				case OK_STOP:
-					logChargingAbort("Stopped by user");
-					
-					callbacks.onChargingStopped();
+				case ERROR_CABLE_CURRENT:
+					callbacks.onError(ChargePortError.CABLE_CURRENT);
 					break;
-				case OK_CABLE_PULLED:
-					logChargingAbort("Cable got removed by user");
+				case ERROR_LOCKING:
+					callbacks.onError(ChargePortError.LOCKING);
 					break;
-				case ERROR_CABLE_LOST:
-					logChargingAbort("Lost contact to cable");
+				case ERROR_UNLOCKING:
+					callbacks.onError(ChargePortError.UNLOCKING);
 					break;
-				case ERROR_CIRCUIT_BREAKER:
-					logChargingAbort("Circuit breaker fault detected");
+				case ERROR_RELAIS_ON:
+					callbacks.onError(ChargePortError.RELAIS_ON);
 					break;
-				case ERROR_METER:
-					logChargingAbort("Current meter fault detected");
+				case ERROR_RELAIS_OFF:
+					callbacks.onError(ChargePortError.RELAIS_OFF);
 					break;
-				case ERROR_TIMEOUT:
-					logChargingAbort("Server timeout");
-					
-					callbacks.onTimeout();
+				case ERROR_CONFIG_INVALID:
+					callbacks.onError(ChargePortError.CONFIG_INVALID);
 					break;
 				case ERROR_VENTING:
-					logChargingAbort("Venting not supported");
+					callbacks.onError(ChargePortError.VENTING);
 					break;
-				case ERROR_PMW:
-					logChargingAbort("PMW-signal unstable. Charging interrupted to avoid damage");
+				case PORT_BUSY:
+					callbacks.onError(ChargePortError.PORT_BUSY);
 					break;
 				default:
 					break;
 				}
-			case ERROR_CABLE_CURRENT:
-				logErrorWarning("Cable current");
-				break;
-			case ERROR_LOCKING:
-				logErrorWarning("Locking");
-				break;
-			case ERROR_UNLOCKING:
-				logErrorWarning("Unlocking");
-				break;
-			case ERROR_RELAIS_ON:
-				logErrorWarning("Switchign relais on");
-				break;
-			case ERROR_RELAIS_OFF:
-				logErrorWarning("Switchign relais off");
-				break;
-			case ERROR_CONFIG_INVALID:
-				logErrorWarning("Confiuration invalid");
-				break;
-			case ERROR_VENTING:
-				logErrorWarning("Ventilation");
-				break;
-			case PORT_BUSY:
-				logErrorWarning("Busy");
-				break;
-			default:
-				break;
 			}
+			statusLast = status;
 		}
-	}
-
-	private void logChargingAbort(String message) {
-		logger.warn("Electric vehicle at \"{}\" aborted charging: {}", id, message);
-	}
-
-	private void logErrorWarning(String message) {
-		logger.warn("Error detected at \"{}\": {}", id, message);
-	}
-
-	private boolean isValid(Record record) {
-		if (record != null && record.getFlag() == Flag.VALID) {
-			return true;
-		}
-		return false;
 	}
 
 }

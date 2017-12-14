@@ -7,11 +7,16 @@ public interface ChargePortListenerCallbacks {
 
 	void onChargePortEvent();
 
-	void onWaitForStart();
+	void onChargingStartRequest();
 
     void onChargingPaused();
 
+    void onChargingComplete();
+
     void onChargingStopped();
 
-    void onTimeout();
+    void onChargingAborted();
+
+    void onError(ChargePortError error);
+
 }

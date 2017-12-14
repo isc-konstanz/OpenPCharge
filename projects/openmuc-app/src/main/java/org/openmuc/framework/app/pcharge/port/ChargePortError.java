@@ -20,25 +20,26 @@
  */
 package org.openmuc.framework.app.pcharge.port;
 
-import org.openmuc.framework.data.Flag;
-import org.openmuc.framework.data.Record;
-import org.openmuc.framework.dataaccess.RecordListener;
+public enum ChargePortError {
 
-public class ChargePortEventListener implements RecordListener {
+	CABLE_CURRENT("Maximum cable current insufficient"),
+	LOCKING("Locking plug failed"),
+	UNLOCKING("Unlocking plug failed"),
+	RELAIS_ON("Switching relais on failed"),
+	RELAIS_OFF("Switching relais off failed"),
+	CONFIG_INVALID("Configuration is invalid"),
+	VENTING("Turning on ventilation failed"),
+	PORT_BUSY("Port is busy");
 
-	private final ChargePortListenerCallbacks callbacks;
+	private final String message;
 
-	public ChargePortEventListener(ChargePortListenerCallbacks callbacks) {
-		this.callbacks = callbacks;
+	private ChargePortError(String message) {
+		this.message = message;
 	}
 
 	@Override
-	public void newRecord(Record record) {
-		if (record != null && record.getFlag() == Flag.VALID) {
-			if (record.getValue().asBoolean()) {
-				callbacks.onChargePortEvent();
-			}
-		}
+	public String toString() {
+		return message;
 	}
 
 }

@@ -27,7 +27,7 @@ public enum ChargePortStartStop {
 	START_REQUEST (2),
 	START (3),
 	OPTIMIZED_ACTIVATE (4),
-	OPTIMIZED_DEAKTIVATE (5),
+	OPTIMIZED_DEACTIVATE (5),
 	INTERRUPT_CHARGING (6), 	//Charging can be interrupted with this command. It's still locked but can be unlocked 
 								//by sending this command a second time. Charging can be started again by sending the "START" command. 
 	LOCK_MANUALLY(7);
@@ -54,7 +54,7 @@ public enum ChargePortStartStop {
 			case 4:
 				return OPTIMIZED_ACTIVATE;
 			case 5:
-				return OPTIMIZED_DEAKTIVATE;
+				return OPTIMIZED_DEACTIVATE;
 			case 6:
 				return INTERRUPT_CHARGING;
 			case 7:
