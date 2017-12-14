@@ -11,7 +11,6 @@ import org.openmuc.framework.data.Record;
 import org.openmuc.framework.dataaccess.Channel;
 import org.openmuc.framework.dataaccess.DataAccessService;
 import org.openmuc.framework.dataaccess.ReadRecordContainer;
-import org.openmuc.pcharge.data.ChargeAuthorizationStatus;
 import org.openmuc.pcharge.data.ChargeCompleteStatus;
 import org.openmuc.pcharge.data.ChargePortStartStop;
 import org.slf4j.Logger;
@@ -29,9 +28,9 @@ public class ChargePort implements ChargePortListenerCallbacks {
 
 	private final ChargePortEventListener eventListener;
 	private final ChargePortStatusListener portStatusListener;
-	private final Channel portStatus;
-	private final Channel authStatus;
+//	private final Channel authStatus;
 	private final Channel completeStatus;
+	private final Channel portStatus;
 	private final Channel currentLimit;
 
 
@@ -40,10 +39,10 @@ public class ChargePort implements ChargePortListenerCallbacks {
 		this.id = id;
 		
 		logger.info("Activating P-CHARGE Control for Charge Port \"{}\"", id);
-		
-		portStatus = getChannel(configs, ChargePortConst.PORT_STATUS);
+
+//		authStatus = getChannel(configs, ChargePortConst.AUTHORIZATION_STATUS);
 		completeStatus = getChannel(configs, ChargePortConst.COMPLETE_STATUS);
-		authStatus = getChannel(configs, ChargePortConst.AUTHORIZATION_STATUS);
+		portStatus = getChannel(configs, ChargePortConst.PORT_STATUS);
 		currentLimit = getChannel(configs, ChargePortConst.CURRENT_LIMIT);
 		
 		Channel event = getChannel(configs, ChargePortConst.EVENT);
@@ -151,13 +150,13 @@ public class ChargePort implements ChargePortListenerCallbacks {
 		
 		// TODO: Better understand the stop functionality and the necessity to react to it
 		
-		Record authStatusRecord = authStatus.getLatestRecord();
-		if (authStatusRecord != null && authStatusRecord.getFlag() == Flag.VALID) {
-			if (ChargeAuthorizationStatus.newStatus(authStatusRecord.getValue().asByte()) == ChargeAuthorizationStatus.SERVER_REQUESTED_START) {
-				stopCharging();
-				startCharging(false, CURRENT_LIMIT);
-			}
-		}
+//		Record authStatusRecord = authStatus.getLatestRecord();
+//		if (authStatusRecord != null && authStatusRecord.getFlag() == Flag.VALID) {
+//			if (ChargeAuthorizationStatus.newStatus(authStatusRecord.getValue().asByte()) == ChargeAuthorizationStatus.SERVER_REQUESTED_START) {
+//				stopCharging();
+//				startCharging(false, CURRENT_LIMIT);
+//			}
+//		}
 	}
 
 	@Override
