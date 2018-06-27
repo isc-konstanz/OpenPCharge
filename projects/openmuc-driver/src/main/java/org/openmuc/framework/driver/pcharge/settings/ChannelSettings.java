@@ -25,7 +25,7 @@ import org.openmuc.framework.config.Preferences;
 
 public class ChannelSettings extends Preferences {
 
-    public static final PreferenceType TYPE = PreferenceType.SETTINGS_DEVICE;
+    public static final PreferenceType TYPE = PreferenceType.SETTINGS_CHANNEL;
 
     @Option
     private int chargePort;

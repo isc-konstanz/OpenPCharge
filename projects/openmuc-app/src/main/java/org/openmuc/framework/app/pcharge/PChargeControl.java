@@ -30,7 +30,6 @@ import org.ini4j.Ini;
 import org.ini4j.IniPreferences;
 import org.openmuc.framework.app.pcharge.port.ChargePort;
 import org.openmuc.framework.dataaccess.DataAccessService;
-import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -39,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(service = {})
-public class PChargeControl extends Thread {
+public final class PChargeControl extends Thread {
 	private static final Logger logger = LoggerFactory.getLogger(PChargeControl.class);
 
 	private final static String CONFIG = "org.openmuc.framework.app.pcharge.config";
@@ -47,15 +46,15 @@ public class PChargeControl extends Thread {
 
 	@Reference
 	private DataAccessService dataAccessService;
-	
+
 	private final Map<String, ChargePort> ports = new HashMap<String, ChargePort>();
 
 	private volatile boolean deactivateFlag;
 
 	private Ini configs = null;
 
-	@Activate
-	protected void activate(ComponentContext context) {
+    @Activate
+    private void activate() {
 		logger.info("Activating P-CHARGE Control");
 
 		String fileName = System.getProperty(CONFIG);
@@ -71,8 +70,8 @@ public class PChargeControl extends Thread {
 		}
 	}
 
-	@Deactivate
-	protected void deactivate(ComponentContext context) {
+    @Deactivate
+    private void deactivate() {
 		logger.info("Deactivating P-CHARGE Control");
 		deactivateFlag = true;
 

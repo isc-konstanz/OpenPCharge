@@ -5,12 +5,6 @@ def ini4jversion = '0.5.4'
 
 configurations.create('embed')
 
-repositories {
-   flatDir {
-       dirs rootDir.getPath() + '/dependencies/openmuc'
-   }
-}
-
 dependencies {
   compile project(':openmuc-driver-pcharge')
   embed project(':pcharge')
