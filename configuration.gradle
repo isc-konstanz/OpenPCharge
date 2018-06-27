@@ -1,6 +1,6 @@
 project.ext {
 
-  cfgVersion = '0.1.0'
+  cfgVersion = '0.2.1'
 
   cfgGroup = "org.openmuc"
 
@@ -13,12 +13,13 @@ project.ext {
   jarDefaultImportPackageVersion = ";version=0"
 
   distributionProjects = subprojects.findAll {
-    it.getPath() == ":skeleton" ||
-    it.getPath() == ":openmuc-driver-skeleton"
+    it.getPath() == ":pcharge" ||
+    it.getPath() == ":openmuc-driver-pcharge" ||
+    it.getPath() == ":openmuc-app-pcharge"
   }
 
   docProjects = distributionProjects.findAll {
-    it.getPath() == ":skeleton"
+    it.getPath() == ":pcharge"
   }
 
 }

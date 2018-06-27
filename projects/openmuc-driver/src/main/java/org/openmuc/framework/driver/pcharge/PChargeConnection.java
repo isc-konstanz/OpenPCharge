@@ -26,8 +26,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.openmuc.framework.config.ArgumentSyntaxException;
-import org.openmuc.framework.config.ChannelScanInfo;
-import org.openmuc.framework.config.ScanException;
+import org.openmuc.framework.config.DriverInfoFactory;
+import org.openmuc.framework.config.DriverPreferences;
 import org.openmuc.framework.data.BooleanValue;
 import org.openmuc.framework.data.ByteValue;
 import org.openmuc.framework.data.DoubleValue;
@@ -36,8 +36,8 @@ import org.openmuc.framework.data.IntValue;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.TypeConversionException;
 import org.openmuc.framework.data.Value;
-import org.openmuc.framework.driver.pcharge.options.PChargeChannelPreferences;
-import org.openmuc.framework.driver.pcharge.options.PChargeDriverInfo;
+import org.openmuc.framework.driver.pcharge.settings.ChannelSettings;
+import org.openmuc.framework.driver.pcharge.settings.PChargePortKey;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
 import org.openmuc.framework.driver.spi.Connection;
@@ -59,10 +59,11 @@ import org.slf4j.LoggerFactory;
 
 
 @Component
-public class PChargeDevice implements Connection {
-	private final static Logger logger = LoggerFactory.getLogger(PChargeDevice.class);
-	private final PChargeDriverInfo info = PChargeDriverInfo.getInfo();
-	
+public class PChargeConnection implements Connection {
+	private final static Logger logger = LoggerFactory.getLogger(PChargeConnection.class);
+
+    private final DriverPreferences prefs = DriverInfoFactory.getPreferences(PChargeDriver.class);
+
 	private static final int CURRENT_LIMIT = 32;
 
 	private final ExecutorService executor;
@@ -70,7 +71,7 @@ public class PChargeDevice implements Connection {
 
 	private PChargeListener listener = null;
 
-	public PChargeDevice(int port) throws ConnectionException {
+	public PChargeConnection(int port) throws ConnectionException {
 		logger.info("Opening P-CHARGE TCP connection at port {}", port);
 		try {
 			connection = new PChargeSocket(port);
@@ -80,14 +81,6 @@ public class PChargeDevice implements Connection {
 		}
 		
 		executor = Executors.newFixedThreadPool(1);
-	}
-
-	@Override
-	public List<ChannelScanInfo> scanForChannels(String settings)
-			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ConnectionException {
-		
-		// TODO return the list of all possible Channels
-		return null;
 	}
 
 	@Override
@@ -124,12 +117,12 @@ public class PChargeDevice implements Connection {
 						
 						for (ChannelRecordContainer container : containers) {
 							try {
-								PChargeChannelPreferences prefs = info.getChannelPreferences(container);
-								
-								int port = prefs.getChargePort();
+								PChargePortKey key = PChargePortKey.valueOf(container.getChannelAddress());
+								ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
+								int port = settings.getPort();
 								
 								Value value = null;
-								switch(prefs.getKey()) {
+								switch(key) {
 								case STATUS:
 									ChargePortStatus status = chargePort.getStatus(port);
 
@@ -311,7 +304,7 @@ public class PChargeDevice implements Connection {
 									logger.debug("Read RFID User of Port {}: {} ", port, value);
 									break;
 								default:
-									throw new ArgumentSyntaxException("Unknown Charge Port Key: " + prefs.getKey().name());
+									throw new ArgumentSyntaxException("Unknown Charge Port Key: " + key.name());
 								}
 								
 								container.setRecord(new Record(value, samplingTime, Flag.VALID));
@@ -320,7 +313,6 @@ public class PChargeDevice implements Connection {
 								logger.warn("Unable to configure channel \"{}\" with settings \"{}\": {}", container.getChannelAddress(), container.getChannelSettings(), e);
 								container.setRecord(new Record(null, samplingTime, Flag.DRIVER_ERROR_READ_FAILURE));
 							}
-					
 						}
 						break;
 					
@@ -341,7 +333,7 @@ public class PChargeDevice implements Connection {
 	@Override
 	public void startListening(List<ChannelRecordContainer> containers, RecordsReceivedListener listener)
 			throws UnsupportedOperationException, ConnectionException {
-
+		
 		if (this.listener != null) {
 			this.listener.terminate();
 		}
@@ -352,22 +344,22 @@ public class PChargeDevice implements Connection {
 	@Override
 	public Object write(List<ChannelValueContainer> containers, Object containerListHandle)
 			throws UnsupportedOperationException, ConnectionException {
-
+		
 		if (listener != null) {
 			listener.stop();
 		}
-
+		
 		PChargeMessage messageInfo = null;
 		try {
 			for (ChannelValueContainer container : containers) {
 				try {
 					synchronized(connection) {
-						PChargeChannelPreferences prefs = info.getChannelPreferences(container);
-	
-						int port = prefs.getChargePort();
+						PChargePortKey key = PChargePortKey.valueOf(container.getChannelAddress());
+						ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
+						int port = settings.getPort();
 						Value value = container.getValue();
 						
-						switch(prefs.getKey()) {
+						switch(key) {
 						case CHARGING_CURRENT:
 							logger.debug("Set Current Limit of Port {}: {}A", port, value);
 							try {
@@ -433,7 +425,7 @@ public class PChargeDevice implements Connection {
 							}
 							break;
 						default:
-							logger.warn("Unknown Charge Port Key: " + prefs.getKey().name());
+							logger.warn("Unknown Charge Port Key: " + key.name());
 							break;
 						}
 					}

@@ -22,21 +22,20 @@ package org.openmuc.framework.driver.pcharge;
 
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.DriverInfo;
+import org.openmuc.framework.config.DriverInfoFactory;
 import org.openmuc.framework.config.ScanException;
 import org.openmuc.framework.config.ScanInterruptedException;
-import org.openmuc.framework.driver.pcharge.options.PChargeDevicePreferences;
-import org.openmuc.framework.driver.pcharge.options.PChargeDriverInfo;
+import org.openmuc.framework.driver.pcharge.settings.DeviceAddress;
 import org.openmuc.framework.driver.spi.Connection;
 import org.openmuc.framework.driver.spi.ConnectionException;
 import org.openmuc.framework.driver.spi.DriverDeviceScanListener;
 import org.openmuc.framework.driver.spi.DriverService;
 import org.osgi.service.component.annotations.Component;
 
-
 @Component
 public class PChargeDriver implements DriverService {
 //	private final static Logger logger = LoggerFactory.getLogger(PChargeDriver.class);
-    private final PChargeDriverInfo info = PChargeDriverInfo.getInfo();
+    private final DriverInfo info = DriverInfoFactory.getPreferences(PChargeDriver.class);
 
 	@Override
 	public DriverInfo getInfo() {
@@ -58,9 +57,9 @@ public class PChargeDriver implements DriverService {
 	@Override
 	public Connection connect(String addressStr, String settingsStr) throws ArgumentSyntaxException, ConnectionException {
 		try {
-			PChargeDevicePreferences settings = info.getDevicePreferences(settingsStr);
+			DeviceAddress address = info.parse(addressStr, DeviceAddress.class);
 			
-			return new PChargeDevice(settings.getPort());
+			return new PChargeConnection(address.getPort());
 
 		} catch (IllegalArgumentException e) {
 			throw new ArgumentSyntaxException("Unable to configure EWS-Box device: " + e.getMessage());

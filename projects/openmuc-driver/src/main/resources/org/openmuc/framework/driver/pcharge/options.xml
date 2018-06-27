@@ -20,8 +20,6 @@
       </option>
     </deviceAddress>
     
-    <deviceScanSettings><disabled>true</disabled></deviceScanSettings>
-    
     <channelAddress>
       <syntax>
         <keyValue>false</keyValue>

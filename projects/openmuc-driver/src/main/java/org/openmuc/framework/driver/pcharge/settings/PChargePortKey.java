@@ -18,25 +18,41 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.driver.pcharge.options;
+package org.openmuc.framework.driver.pcharge.settings;
 
-import org.openmuc.framework.config.options.Preferences;
+public enum PChargePortKey {
 
-public class PChargeDevicePreferences {
-
-	private static final String PORT_TCP_KEY = "tcpPort";
-
-	protected final Preferences address;
-
-	public PChargeDevicePreferences(Preferences address) {
-		this.address = address;
-	}
-
-	public Integer getPort() {
-		if(address.contains(PORT_TCP_KEY)) {
-			return address.getInteger(PORT_TCP_KEY);
-		}
-		return null;
-	}
-
+	STATUS,
+	CABLE_VOLTAGE,
+	CABLE_CURRENT,
+	CHARGING_CURRENT,
+	VENTILATION_REQUEST, 
+	CHARGING_AUTHORIZATION_STATUS,
+	CHARGING_OPTIMIZED,
+	CHARGING_COMPLETE_STATUS,
+	CHARGING_DURATION,
+	CHARGING_ENERGY,
+	CHARGING_DURATION_LAST,
+	CHARGING_ENERGY_TOTAL,
+	CHARGING_CYCLE_COUNTER,
+	LOCKED,
+	CONTACTOR,
+	RCD,
+	PWM_MINIMUM,
+	PWM_MAXIMUM,
+	BUTTON_1_START,
+	BUTTON_2_STOP,
+	BUTTON_3_OPTIMIZED,
+	BUTTON_4_SPARE,
+	LED_RED_ERROR,
+	LED_GREEN_READY,
+	LED_ORANGE_OPTIMIZED,
+	LED_SPARE,
+	RFID_LOGIN,
+	RFID_GROUP,
+	RFID_CARD,
+	RFID_USER,
+	EVENT_PORT,
+	EVENT_RFID,
+	UNKNOWN;
 }

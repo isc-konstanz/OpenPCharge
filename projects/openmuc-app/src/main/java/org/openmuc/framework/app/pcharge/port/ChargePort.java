@@ -6,6 +6,7 @@ import java.util.prefs.Preferences;
 
 import org.openmuc.framework.app.pcharge.PChargeConfigException;
 import org.openmuc.framework.data.Flag;
+import org.openmuc.framework.data.FutureValue;
 import org.openmuc.framework.data.IntValue;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.dataaccess.Channel;
@@ -69,28 +70,28 @@ public class ChargePort implements ChargePortListenerCallbacks {
 	public synchronized void startCharging(boolean optimized, int limit) {
 		long time = System.currentTimeMillis();
 		
-		List<Record> records = new LinkedList<Record>();
+		List<FutureValue> values = new LinkedList<FutureValue>();
 		if (optimized) {
 			logger.debug("Start optimized charging for electric vehicle at \"{}\" with up to {}A", id, limit);
-			records.add(new Record(new IntValue(ChargePortStartStop.OPTIMIZED_ACTIVATE.getCode()), time));
+			values.add(new FutureValue(new IntValue(ChargePortStartStop.OPTIMIZED_ACTIVATE.getCode()), time));
 		}
 		else {
 			logger.debug("Start charging for electric vehicle at \"{}\" with up to {}A", id, limit);
-			records.add(new Record(new IntValue(ChargePortStartStop.OPTIMIZED_DEACTIVATE.getCode()), time));
+			values.add(new FutureValue(new IntValue(ChargePortStartStop.OPTIMIZED_DEACTIVATE.getCode()), time));
 		}
-		records.add(new Record(new IntValue(ChargePortStartStop.START.getCode()), time));
+		values.add(new FutureValue(new IntValue(ChargePortStartStop.START.getCode()), time));
 		
-		portStatus.write(records);
+		portStatus.writeFuture(values);
 		currentLimit.write(new IntValue(limit));
 	}
 
 	public synchronized void stopCharging() {
 		long time = System.currentTimeMillis();
-		
-		List<Record> records = new LinkedList<Record>();
-		records.add(new Record(new IntValue(ChargePortStartStop.INTERRUPT_CHARGING.getCode()), time));
 
-		portStatus.write(records);
+		List<FutureValue> values = new LinkedList<FutureValue>();
+		values.add(new FutureValue(new IntValue(ChargePortStartStop.INTERRUPT_CHARGING.getCode()), time));
+		
+		portStatus.writeFuture(values);
 	}
 
 	public synchronized void setChargingCurrent(int limit) {

@@ -24,12 +24,14 @@ import java.io.IOException;
 import java.util.List;
 
 import org.openmuc.framework.config.ArgumentSyntaxException;
+import org.openmuc.framework.config.DriverInfoFactory;
+import org.openmuc.framework.config.DriverPreferences;
 import org.openmuc.framework.data.BooleanValue;
 import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.Value;
-import org.openmuc.framework.driver.pcharge.options.PChargeChannelPreferences;
-import org.openmuc.framework.driver.pcharge.options.PChargeDriverInfo;
+import org.openmuc.framework.driver.pcharge.settings.ChannelSettings;
+import org.openmuc.framework.driver.pcharge.settings.PChargePortKey;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.openmuc.pcharge.PChargeException;
@@ -43,7 +45,8 @@ import org.slf4j.LoggerFactory;
 
 public class PChargeListener implements Runnable {
 	private final static Logger logger = LoggerFactory.getLogger(PChargeListener.class);
-	private final PChargeDriverInfo info = PChargeDriverInfo.getInfo();
+
+    private final DriverPreferences prefs = DriverInfoFactory.getPreferences(PChargeDriver.class);
 
 	private static final int SLEEP_INTERVAL = 100;
 
@@ -131,12 +134,12 @@ public class PChargeListener implements Runnable {
 			
 			for (ChannelRecordContainer container : containers) {
 				try {
-					PChargeChannelPreferences prefs = info.getChannelPreferences(container);
-					//TODO check if port or rfid event through address parameters
-					int port = prefs.getChargePort();
+					PChargePortKey key = PChargePortKey.valueOf(container.getChannelAddress());
+					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
+					int port = settings.getPort();
 					
 					Value value = null;
-					switch (prefs.getKey()) {
+					switch (key) {
 					case EVENT_PORT:
 						boolean portEvent = event.hasPortEvent(port);
 						if (portEvent) {
@@ -154,7 +157,7 @@ public class PChargeListener implements Runnable {
 						}
 						break;
 					default:
-						logger.warn("Unable to listen for Charge Port Key: {}", prefs.getKey());
+						logger.warn("Unable to listen for Charge Port Key: {}", key.name());
 						break;
 					}
 					

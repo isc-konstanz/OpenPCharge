@@ -38,7 +38,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 @Component(service = {})
 public class PChargeControl extends Thread {
 	private static final Logger logger = LoggerFactory.getLogger(PChargeControl.class);
@@ -46,6 +45,7 @@ public class PChargeControl extends Thread {
 	private final static String CONFIG = "org.openmuc.framework.app.pcharge.config";
 	private final static int SLEEP_INTERVAL = 60000;
 
+	@Reference
 	private DataAccessService dataAccessService;
 	
 	private final Map<String, ChargePort> ports = new HashMap<String, ChargePort>();
@@ -81,15 +81,6 @@ public class PChargeControl extends Thread {
 			this.join();
 		} catch (InterruptedException e) {
 		}
-	}
-
-	@Reference
-	protected void bindDataAccessService(DataAccessService dataAccessService) {
-		this.dataAccessService = dataAccessService;
-	}
-
-	protected void unbindDataAccessService(DataAccessService dataAccessService) {
-		this.dataAccessService = null;
 	}
 
 	@Override
