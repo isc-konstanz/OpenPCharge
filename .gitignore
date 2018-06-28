@@ -47,4 +47,5 @@ build/
 !/build/libs
 /build/libs/*
 !/build/libs/pcharge*
+!/build/libs/openmuc-app-*
 !/build/libs/openmuc-driver-*

@@ -7,7 +7,7 @@ configurations.create('embed')
 
 repositories {
    flatDir {
-       dirs 'dependencies/openmuc'
+       dirs rootDir.getPath() + '/dependencies/openmuc'
    }
 }
 
