@@ -26,7 +26,6 @@ import java.util.prefs.Preferences;
 
 import org.openmuc.framework.app.pcharge.PChargeConfigException;
 import org.openmuc.framework.data.Flag;
-import org.openmuc.framework.data.FutureValue;
 import org.openmuc.framework.data.IntValue;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.dataaccess.Channel;
@@ -88,30 +87,20 @@ public class ChargePort implements ChargePortListenerCallbacks {
 	}
 
 	public synchronized void startCharging(boolean optimized, int limit) {
-		long time = System.currentTimeMillis();
-		
-		List<FutureValue> values = new LinkedList<FutureValue>();
 		if (optimized) {
 			logger.debug("Start optimized charging for electric vehicle at \"{}\" with up to {}A", id, limit);
-			values.add(new FutureValue(new IntValue(ChargePortStartStop.OPTIMIZED_ACTIVATE.getCode()), time));
+			portStatus.write(new IntValue(ChargePortStartStop.OPTIMIZED_ACTIVATE.getCode()));
 		}
 		else {
 			logger.debug("Start charging for electric vehicle at \"{}\" with up to {}A", id, limit);
-			values.add(new FutureValue(new IntValue(ChargePortStartStop.OPTIMIZED_DEACTIVATE.getCode()), time));
+			portStatus.write(new IntValue(ChargePortStartStop.OPTIMIZED_DEACTIVATE.getCode()));
 		}
-		values.add(new FutureValue(new IntValue(ChargePortStartStop.START.getCode()), time));
-		
-		portStatus.writeFuture(values);
+		portStatus.write(new IntValue(ChargePortStartStop.START.getCode()));
 		currentLimit.write(new IntValue(limit));
 	}
 
 	public synchronized void stopCharging() {
-		long time = System.currentTimeMillis();
-
-		List<FutureValue> values = new LinkedList<FutureValue>();
-		values.add(new FutureValue(new IntValue(ChargePortStartStop.INTERRUPT_CHARGING.getCode()), time));
-		
-		portStatus.writeFuture(values);
+		portStatus.write(new IntValue(ChargePortStartStop.INTERRUPT_CHARGING.getCode()));
 	}
 
 	public synchronized void setChargingCurrent(int limit) {
