@@ -4,7 +4,7 @@ SERVER="https://github.com/isc-konstanz"
 PROJECT="OpenPCharge"
 ID="pcharge"
 
-VERSION="1.0.0"
+VERSION="0.2.3"
 
 # Set the targeted location of the OpenMUC framework if not already set.
 if [ -z ${ROOT_DIR+x} ]; then
@@ -28,6 +28,7 @@ if [ ! -f "$ROOT_DIR/bundles/openmuc-driver-$ID-$VERSION.jar" ]; then
 
     tar -xzf "$TMP_DIR/$PROJECT-$VERSION.tar.gz" -C "$TMP_DIR/"
   fi
+  mv -f "$TMP_DIR/$PROJECT/libs/openmuc-app-$ID-$VERSION.jar" "$ROOT_DIR/bundles/"
   mv -f "$TMP_DIR/$PROJECT/libs/openmuc-driver-$ID-$VERSION.jar" "$ROOT_DIR/bundles/"
   mv -f "$TMP_DIR/$PROJECT/libs/device/$ID" "$ROOT_DIR/lib/device/$ID"
   mv -f "$TMP_DIR/$PROJECT/conf/p-charge.conf" "$ROOT_DIR/conf/p-charge.conf"
