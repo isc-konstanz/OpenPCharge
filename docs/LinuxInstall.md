@@ -48,7 +48,7 @@ Adjust the channel IDs accordingly:
 >         event = <channelId>
 
 
-## 1.2 Device templates
+## 1.3 Device templates
 
 Next, device template files are provided by this project, to ease up the configuration of some new hardware devices.  
 Those can be found at *libs/device/pcharge* and should be moved to the corresponding directory in the emonmuc root:
@@ -58,7 +58,7 @@ mv ./OpenPCharge/libs/device/pcharge /opt/emonmuc/lib/device/
 ~~~
 
 
-## 1.3 Finish
+## 1.4 Finish
 
 At last, don't forget to remove the released tarball to avoid cluttering of your system.
 
