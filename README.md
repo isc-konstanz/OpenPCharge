@@ -1,50 +1,41 @@
-![emonmuc header](doc/img/emonmuc-logo.png)
+![emonmuc header](docs/img/emonmuc-logo.png)
 
-This project implements a communication protocol as part of emonmuc (**e**nergy **mon**itoring **m**ulty **u**tility **c**ommunication), an *unofficial fork* of the open-source project [OpenMUC](https://www.openmuc.org/), a software framework based on Java and OSGi, that simplifies the development of customized *monitoring, logging and control* systems.
+This project implements a communication protocol as part of [emonmuc](https://github.com/isc-konstanz/emonmuc/) (**e**nergy **mon**itoring **m**ulty **u**tility **c**ommunication), based on the open-source project [OpenMUC](https://www.openmuc.org/), a software framework based on Java and OSGi, that simplifies the development of customized *monitoring, logging and control* systems.
 
 
 ----------
 
 # OpenPCharge
 
-*This section is a placeholder and will be filled with a project description.*
+The [P-CHARGE systems by SSL Energie](https://www.ssl-energie.de/en/produkte/charging/p-charge/) is a complete series of charging stations for electric vehicles, from the simple charging pillar for electric bicycles, mopeds and electric cars to complete parking area systems for department store chains, communal park houses and parking areas.
+
+This project implements a basic protocol driver and charge control application specifically for the DIN rail *EWS-Box*.
 
 
 ## 1 Installation
 
-The installation guide was documented for Linux based platforms, but further guides may follow.
+To setup this protocol driver, [emonmuc](https://github.com/isc-konstanz/emonmuc/) needs to be installed. To do so, a comprehensive guide is provided on the projects GitHub page.
 
-To setup this protocol driver, **[emonmuc](https://github.com/isc-konstanz/emonmuc/)** needs to be installed. To do so, a comprehensive guide is provided on the projects GitHub page.
-
-With emonmuc being installed, simply copy the driver jarfile from the projects *build/lib*, to the *bundles-available* directory, by default located at `/opt/emonmuc/bundles-available`. For example:
+With emonmuc being installed, the driver may be enabled
 
 ~~~
-cp ~/OpenPCharge/build/libs/openmuc-*pcharge* /opt/emonmuc/bundles-available/
-~~~
-
-Now, the driver can be enabled
-
-~~~
-emonmuc enable app pcharge
-emonmuc enable driver pcharge
+emonmuc install pcharge
 ~~~
 
 To disable the driver, use
 
 ~~~
-emonmuc disable app pcharge
-emonmuc disable driver pcharge
+emonmuc remove pcharge
 ~~~
 
+This shell command will set up the driver, as instructed in the [setup script](setup.sh).  
+If there is the need to manually install the driver, the separate [installation guide](docs/LinuxInstall.md) may be followed.
 
-### 1.1 Device templates
 
-Next, device template files are provided by this project, to ease up the configuration of some new hardware devices.  
-Those can be found at *lib/device/pcharge* and should be copied to the corresponding directory in the emonmuc root:
+## 2 Development
 
-~~~
-cp -R ~/OpenPCharge/lib/device/pcharge /opt/emonmuc/lib/device/pcharge
-~~~
+To provide an entrypoint for further developments, a generated [javadoc](https://isc-konstanz.github.io/OpenHomeMatic/javadoc/) can be visited.  
+For other questions or initiatives please don't hesitate to file an issue or get into contact directly.
 
 
 ----------
@@ -53,7 +44,7 @@ cp -R ~/OpenPCharge/lib/device/pcharge /opt/emonmuc/lib/device/pcharge
 
 This project is maintained by:
 
-![ISC logo](doc/img/isc-logo.png)
+![ISC logo](docs/img/isc-logo.png)
 
 - **[ISC Konstanz](http://isc-konstanz.de/)** (International Solar Energy Research Center)
 - **Adrian Minde**: adrian.minde@isc-konstanz.de
