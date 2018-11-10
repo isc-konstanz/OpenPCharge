@@ -34,7 +34,7 @@ If there is the need to manually install the driver, the separate [installation 
 
 ## 2 Development
 
-To provide an entrypoint for further developments, a generated [javadoc](https://isc-konstanz.github.io/OpenHomeMatic/javadoc/) can be visited.  
+To provide an entrypoint for further developments, a generated [javadoc](https://isc-konstanz.github.io/OpenPCharge/javadoc/) can be visited.  
 For other questions or initiatives please don't hesitate to file an issue or get into contact directly.
 
 
