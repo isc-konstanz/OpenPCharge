@@ -24,7 +24,7 @@ jar {
   manifest {
     name = projectName
     instruction 'Bundle-ClassPath', '.,lib/pcharge-' + cfgVersion + '.jar,lib/ini4j-' + ini4jversion + '.jar'
-    instruction 'Import-Package', '!org.openmuc.pcharge.*,!org.ini4j.*,*'
+    instruction 'Import-Package', '!org.openmuc.pcharge.*,!org.ini4j.*,*' + jarDefaultImportPackageVersion
     instruction 'Export-Package', ''
   }
 }
