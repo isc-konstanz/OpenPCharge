@@ -13,8 +13,9 @@ To install the OSGi bundle, simply download the latest release tarball and move 
 ~~~shell
 wget --quiet --show-progress https://github.com/isc-konstanz/OpenPCharge/releases/download/v1.0.0/OpenPCharge-1.0.0.tar.gz
 tar -xzf OpenPCharge-1.0.0.tar.gz
-mv ./OpenPCharge/libs/openmuc-app-pcharge-1.0.0.jar /opt/emonmuc/bundles/
-mv ./OpenPCharge/libs/openmuc-driver-pcharge-1.0.0.jar /opt/emonmuc/bundles/
+cd OpenPCharge*
+mv ./libs/openmuc-app-pcharge-1.0.0.jar /opt/emonmuc/bundles/
+mv ./libs/openmuc-driver-pcharge-1.0.0.jar /opt/emonmuc/bundles/
 ~~~
 
 Afterwards restart the framework, for the driver to be started
@@ -29,7 +30,7 @@ emonmuc restart
 For the application to know the correct channels to be used, a configuration file needs to be created or the provided default file used.
 
 ~~~
-mv ./OpenPCharge/conf/p-charge.conf /opt/emonmuc/conf/p-charge.conf
+mv ./conf/p-charge.conf /opt/emonmuc/conf/p-charge.conf
 nano /opt/emonmuc/conf/p-charge.conf
 ~~~
 
@@ -54,7 +55,7 @@ Next, device template files are provided by this project, to ease up the configu
 Those can be found at *libs/device/pcharge* and should be moved to the corresponding directory in the emonmuc root:
 
 ~~~shell
-mv ./OpenPCharge/libs/device/pcharge /opt/emonmuc/lib/device/
+mv ./libs/device/pcharge /opt/emonmuc/lib/device/
 ~~~
 
 
@@ -63,5 +64,6 @@ mv ./OpenPCharge/libs/device/pcharge /opt/emonmuc/lib/device/
 At last, don't forget to remove the released tarball to avoid cluttering of your system.
 
 ~~~
+cd ..
 rm -rf ./OpenPCharge*
 ~~~
