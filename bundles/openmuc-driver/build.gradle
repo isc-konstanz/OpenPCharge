@@ -1,0 +1,58 @@
+/* 
+ * Copyright 2016-20 ISC Konstanz
+ * 
+ * This file is part of OpenPCharge.
+ * For more information visit https://github.com/isc-konstanz/OpenPCharge
+ * 
+ * OpenPCharge is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * OpenPCharge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
+ */
+archivesBaseName = 'openmuc-driver-pcharge'
+def projectFullName = 'OpenMUC Driver - P-CHARGE'
+def projectDescription = 'P-CHARGE driver for the OpenMUC framework.'
+
+configurations.create('embed')
+
+dependencies {
+  implementation fileTree(dir: rootDir.getPath() + '/libs/openmuc', include: ['*.jar'])
+  implementation group: 'org.osgi', name: 'osgi.core', version: '7.0.0'
+  implementation group: 'org.osgi', name: 'org.osgi.service.component.annotations', version: '1.4.0'
+  implementation group: 'org.apache.felix', name: 'org.apache.felix.scr', version: '2.1.14'
+
+  implementation project(':core')
+  embed          project(':core')
+}
+
+def embed = configurations.embed.findAll {
+  !it.getName().matches("(slf4j).*")
+}
+
+jar {
+  into('libs') {
+    from embed
+  }
+  manifest {
+    attributes('Bundle-Name':        projectFullName,
+               'Bundle-Description': projectDescription,
+               'Bundle-ClassPath': '.,' + embed.collect { 'libs/'+it.getName() }.join(','),
+               'Import-Package':   '!org.openmuc.pcharge.*,' +
+                                   '*;version=0',
+               'Export-Package':   '')
+  }
+}
+
+eclipse {
+  project {
+    name = archivesBaseName
+  }
+}

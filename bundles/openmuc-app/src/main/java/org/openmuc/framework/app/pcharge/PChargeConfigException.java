@@ -18,7 +18,19 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'bundle-app', 'bundle-driver'
+package org.openmuc.framework.app.pcharge;
 
-project(':bundle-app').projectDir = file('bundles/openmuc-app')
-project(':bundle-driver').projectDir = file('bundles/openmuc-driver')
+import org.openmuc.pcharge.PChargeException;
+
+public final class PChargeConfigException extends PChargeException {
+	private static final long serialVersionUID = -6687629281497030093L;
+
+	public PChargeConfigException() {
+		super();
+	}
+	
+	public PChargeConfigException(String s) {
+		super(s);
+	}
+
+}

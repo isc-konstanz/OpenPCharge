@@ -18,7 +18,46 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'bundle-app', 'bundle-driver'
+package org.openmuc.pcharge.data;
 
-project(':bundle-app').projectDir = file('bundles/openmuc-app')
-project(':bundle-driver').projectDir = file('bundles/openmuc-driver')
+
+public enum MsgId {
+
+	ANSWER(0x41, 'A'),
+	COMMAND(0x43, 'C'),
+	DEBUG(0x44, 'D'),
+	INFO(0x49, 'I'),
+	UNKNOWN(-1, 'U');
+
+    private final int code;
+    private final char symbol;
+
+    private MsgId(int code, char symbol) {
+        this.code = code;
+        this.symbol = symbol;
+    }
+
+    public byte getCode() {
+        return (byte) code;
+    }
+
+    public char getSymbol() {
+        return symbol;
+    }
+
+	public static MsgId newMsgId(byte b) {
+		
+		switch(b) {
+		case (byte) 0x41:
+			return ANSWER;
+		case (byte) 0x43:
+			return COMMAND;
+		case (byte) 0x44:
+			return DEBUG;
+		case (byte) 0x49:
+			return INFO;
+		default:
+			return UNKNOWN;
+		}
+	}
+}

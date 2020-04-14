@@ -18,7 +18,25 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'bundle-app', 'bundle-driver'
+package org.openmuc.framework.app.pcharge.port;
 
-project(':bundle-app').projectDir = file('bundles/openmuc-app')
-project(':bundle-driver').projectDir = file('bundles/openmuc-driver')
+/**
+ * Interface used by OpenMUC Record Listeners to notify the {@link ChargePort } about events
+ */
+public interface ChargePortListenerCallbacks {
+
+	void onChargePortEvent();
+
+	void onChargingStartRequest();
+
+    void onChargingPaused();
+
+    void onChargingComplete();
+
+    void onChargingStopped();
+
+    void onChargingAborted();
+
+    void onError(ChargePortError error);
+
+}

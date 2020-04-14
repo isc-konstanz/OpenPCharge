@@ -18,7 +18,33 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'bundle-app', 'bundle-driver'
+package org.openmuc.pcharge.data;
 
-project(':bundle-app').projectDir = file('bundles/openmuc-app')
-project(':bundle-driver').projectDir = file('bundles/openmuc-driver')
+public enum ChargeAuthorizationStatus {
+
+	SERVER_REQUESTED_START(0x01),
+	START_AUTHORIZED(0x02),
+	UNKNOWN(-1);
+	
+	private final int code;
+	
+	private ChargeAuthorizationStatus (int code) {
+		this.code = code;
+	}
+	
+	 public byte getCode() {
+	     return (byte) code;
+	 }
+		
+	public static ChargeAuthorizationStatus newStatus(byte b) {
+		switch(b) {
+		case (byte) 0x01:
+			return SERVER_REQUESTED_START;
+		case (byte) 0x02:
+			return START_AUTHORIZED;
+		default:
+			return UNKNOWN;
+		}
+	}
+		
+}

@@ -18,7 +18,27 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'bundle-app', 'bundle-driver'
+package org.openmuc.framework.app.pcharge.port;
 
-project(':bundle-app').projectDir = file('bundles/openmuc-app')
-project(':bundle-driver').projectDir = file('bundles/openmuc-driver')
+import org.openmuc.framework.data.Flag;
+import org.openmuc.framework.data.Record;
+import org.openmuc.framework.dataaccess.RecordListener;
+
+public class ChargePortEventListener implements RecordListener {
+
+	private final ChargePortListenerCallbacks callbacks;
+
+	public ChargePortEventListener(ChargePortListenerCallbacks callbacks) {
+		this.callbacks = callbacks;
+	}
+
+	@Override
+	public void newRecord(Record record) {
+		if (record != null && record.getFlag() == Flag.VALID) {
+			if (record.getValue().asBoolean()) {
+				callbacks.onChargePortEvent();
+			}
+		}
+	}
+
+}

@@ -18,7 +18,25 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'bundle-app', 'bundle-driver'
+project.ext {
 
-project(':bundle-app').projectDir = file('bundles/openmuc-app')
-project(':bundle-driver').projectDir = file('bundles/openmuc-driver')
+  projectVersion = '0.2.5'
+
+  projectGroup = 'org.openmuc'
+
+  projectVendor = 'ISC Konstanz e.V.'
+  projectSite = 'https://github.com/isc-konstanz/OpenPCharge'
+
+  copyDependencies = false
+
+  distributionProjects = subprojects.findAll {
+    it.getPath() == ':core' ||
+    it.getPath() == ':bundle-app' ||
+    it.getPath() == ':bundle-driver'
+  }
+
+  javadocProjects = distributionProjects.findAll {
+    it.getPath() == ':core'
+  }
+
+}

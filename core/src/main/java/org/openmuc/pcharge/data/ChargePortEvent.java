@@ -18,7 +18,33 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'bundle-app', 'bundle-driver'
+package org.openmuc.pcharge.data;
 
-project(':bundle-app').projectDir = file('bundles/openmuc-app')
-project(':bundle-driver').projectDir = file('bundles/openmuc-driver')
+
+public class ChargePortEvent {
+	
+	private final byte message;
+
+	public ChargePortEvent(byte message) {
+		this.message = message;
+	}
+
+	public boolean hasPortEvent(int port) {
+		switch(port) {
+		case 1:
+			return isBitSet(message, 2);
+		case 2:
+			return isBitSet(message, 1);
+		default:
+			return false;
+		}
+	}
+
+	public boolean hasRfidEvent() {
+		return isBitSet(message, 0);
+	}
+
+	private static Boolean isBitSet(byte b, int bit) {
+	    return (b & (1 << bit)) != 0;
+	}
+}

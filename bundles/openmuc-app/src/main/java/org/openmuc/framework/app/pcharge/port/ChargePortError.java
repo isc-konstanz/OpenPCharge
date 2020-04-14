@@ -18,7 +18,28 @@
  * along with OpenPCharge.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'bundle-app', 'bundle-driver'
+package org.openmuc.framework.app.pcharge.port;
 
-project(':bundle-app').projectDir = file('bundles/openmuc-app')
-project(':bundle-driver').projectDir = file('bundles/openmuc-driver')
+public enum ChargePortError {
+
+	CABLE_CURRENT("Maximum cable current insufficient"),
+	LOCKING("Locking plug failed"),
+	UNLOCKING("Unlocking plug failed"),
+	RELAIS_ON("Switching relais on failed"),
+	RELAIS_OFF("Switching relais off failed"),
+	CONFIG_INVALID("Configuration is invalid"),
+	VENTING("Turning on ventilation failed"),
+	PORT_BUSY("Port is busy");
+
+	private final String message;
+
+	private ChargePortError(String message) {
+		this.message = message;
+	}
+
+	@Override
+	public String toString() {
+		return message;
+	}
+
+}
