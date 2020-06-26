@@ -25,7 +25,7 @@ emonmuc restart
 ~~~
 
 
-## 1.2 Configuration
+## 1.1 Configuration
 
 For the application to know the correct channels to be used, a configuration file needs to be created or the provided default file used.
 
@@ -49,7 +49,7 @@ Adjust the channel IDs accordingly:
 >         event = <channelId>
 
 
-## 1.4 Finish
+## 1.2 Finish
 
 At last, don't forget to remove the released tarball to avoid cluttering of your system.
 
