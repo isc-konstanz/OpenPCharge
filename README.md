@@ -28,8 +28,7 @@ To disable the driver, use
 emonmuc remove pcharge
 ~~~
 
-This shell command will set up the driver, as instructed in the [setup script](setup.sh).  
-If there is the need to manually install the driver, the separate [installation guide](docs/LinuxInstall.md) may be followed.
+This shell command will automatically set up the driver. If there is the need to manually install the driver, the separate [installation guide](docs/LinuxInstall.md) may be followed.
 
 
 ## 2 Development

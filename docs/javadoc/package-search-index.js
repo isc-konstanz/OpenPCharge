@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"org.openmuc.pcharge"},{"l":"org.openmuc.pcharge.data"}]
