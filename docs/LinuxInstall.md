@@ -14,8 +14,8 @@ To install the OSGi bundle, simply download the latest release tarball and move 
 wget --quiet --show-progress https://github.com/isc-konstanz/OpenPCharge/releases/download/v1.0.0/OpenPCharge-1.0.0.tar.gz
 tar -xzf OpenPCharge-1.0.0.tar.gz
 cd OpenPCharge*
-mv ./libs/openmuc-app-pcharge-1.0.0.jar /opt/emonmuc/bundles/
-mv ./libs/openmuc-driver-pcharge-1.0.0.jar /opt/emonmuc/bundles/
+mv ./libs/openmuc-app-pcharge-1.0.0.jar /opt/emonmuc/bundle/
+mv ./libs/openmuc-driver-pcharge-1.0.0.jar /opt/emonmuc/bundle/
 ~~~
 
 Afterwards restart the framework, for the driver to be started
@@ -30,7 +30,7 @@ emonmuc restart
 For the application to know the correct channels to be used, a configuration file needs to be created or the provided default file used.
 
 ~~~
-mv ./conf/p-charge.conf /opt/emonmuc/conf/p-charge.conf
+mv ./conf/p-charge.default.conf /opt/emonmuc/conf/p-charge.conf
 nano /opt/emonmuc/conf/p-charge.conf
 ~~~
 
